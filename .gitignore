@@ -27,3 +27,9 @@
 *.exe
 *.out
 *.app
+
+# Visual Studio intermediate files
+*.VC.db
+ipch
+.vs
+*.vcxproj.user

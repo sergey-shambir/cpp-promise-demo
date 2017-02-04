@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="main">
+      <UniqueIdentifier>{cbb61229-2af1-4c01-a15d-a1490b97f593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{90b0353b-803b-46d0-95df-37430658a1ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="api">
+      <UniqueIdentifier>{ecd9ab58-a869-45db-93b3-6111cf7427c6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="AsioThreadPool.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32NonBlockingDispatcher.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32EventLoop.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="IDispatcher.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="AsioThreadPool.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32NonBlockingDispatcher.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32EventLoop.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="IEventLoop.h">
+      <Filter>api</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
