@@ -2,48 +2,43 @@
 //
 
 #include "stdafx.h"
-#include "AsioThreadPool.h"
-#include "AsioEventLoop.h"
-#include "Win32EventLoop.h"
+#include "MainDispatcher.h"
 #include <iostream>
 #include <thread>
 
-void UseThreadPool(isprom::IDispatcher &pool)
+void Demonstrate(MainDispatcher &dispatcher)
 {
-	auto makePrintFn = [](unsigned value) {
-		return [value] {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            std::cerr << value << std::endl;
-		};
-	};
-
-	pool.Post([] {
-		throw std::runtime_error("Bad task called: it should always throw");
-	});
-    for (unsigned i = 1; i < 42; ++i)
-	{
-		pool.Post(makePrintFn(i));
-	}
+    auto p1 = dispatcher.DoOnBackground([] {
+        return 42;
+    });
+    auto p2 = dispatcher.DoOnBackground([] {
+        return 38;
+    });
+    auto p3 = dispatcher.DoOnBackground([] {
+        return 46;
+    });
+    p3.Then([p2, p1, &dispatcher](int value) {
+        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::cerr << "p3 value = " << value << std::endl;
+        p2.Then([p1, &dispatcher](int value) {
+            std::cerr << "p2 value = " << value << std::endl;
+            p1.Then([&dispatcher](int value) {
+                std::cerr << "p1 value = " << value << std::endl;
+                dispatcher.QuitMainLoop();
+            });
+        });
+    });
 }
 
 int main()
 {
-#if defined(_WIN32)
-	isprom::Win32EventLoop eventLoop;
-#else
-    isprom::AsioEventLoop eventLoop;
-#endif
-	isprom::AsioThreadPool pool;
+    MainDispatcher dispatcher;
 
-	eventLoop.Post([&] {
-		UseThreadPool(pool);
+    dispatcher.DoOnMainThread([&] {
+        Demonstrate(dispatcher);
     });
-    eventLoop.Post([&] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        std::cerr << "Exiting" << std::endl;
-        eventLoop.DeferQuit();
-    });
-    eventLoop.Run();
+
+    dispatcher.EnterMainLoop();
 
     return 0;
 }

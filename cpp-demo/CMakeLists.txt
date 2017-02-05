@@ -10,8 +10,10 @@ endif(UNIX)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libpromise)
 
 # Добавляем библиотеку libpromise
-file(GLOB SRC_LIBPROMISE "libpromise/*.cpp" "libpromise/*.h")
-add_library(libpromise ${SRC_LIBPROMISE})
+file(GLOB SRC_LIBPROMISE_1 "libpromise/*.cpp" "libpromise/*.h")
+file(GLOB SRC_LIBPROMISE_2 "libpromise/promise/*.cpp" "libpromise/promise/*.h")
+file(GLOB SRC_LIBPROMISE_3 "libpromise/platform/*.cpp" "libpromise/platform/*.h")
+add_library(libpromise ${SRC_LIBPROMISE_1} ${SRC_LIBPROMISE_2} ${SRC_LIBPROMISE_3})
 
 # Добавляем демонстрационное приложение
 file(GLOB SRC_APP "app/*.cpp" "app/*.h")
