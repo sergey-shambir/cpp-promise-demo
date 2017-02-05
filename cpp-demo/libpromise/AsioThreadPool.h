@@ -4,6 +4,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/asio/io_service.hpp>
 #include <thread>
+#include <vector>
 
 namespace isprom
 {

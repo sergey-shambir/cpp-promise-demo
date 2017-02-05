@@ -1,4 +1,6 @@
 #include "stdafx.h"
+
+#if defined(_WIN32)
 #include "Win32EventLoop.h"
 #include "Win32NonBlockingDispatcher.h"
 
@@ -13,16 +15,21 @@ namespace isprom
 {
 struct Win32EventLoop::Impl
 {
+    void Post(const Operation &operation)
+    {
+        m_dispatcher.Post(operation);
+    }
+
 	void Run()
 	{
 		WTL::CMessageLoop loop;
 		loop.Run();
 	}
 
-	void Post(const Operation &operation)
-	{
-		m_dispatcher.Post(operation);
-	}
+    void DeferQuit()
+    {
+        ::PostQuitMessage(0);
+    }
 
 private:
 	Win32NonBlockingDispatcher m_dispatcher;
@@ -42,9 +49,15 @@ void Win32EventLoop::Run()
 	m_impl->Run();
 }
 
+void Win32EventLoop::DeferQuit()
+{
+    m_impl->DeferQuit();
+}
+
 void Win32EventLoop::Post(const Operation &operation)
 {
 	m_impl->Post(operation);
 }
 
 }
+#endif

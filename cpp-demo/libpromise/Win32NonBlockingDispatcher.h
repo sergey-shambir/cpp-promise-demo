@@ -4,6 +4,8 @@
 #include <boost/noncopyable.hpp>
 
 
+#if defined(_WIN32)
+
 namespace isprom
 {
 class Win32NonBlockingDispatcher
@@ -31,3 +33,5 @@ private:
 	std::unique_ptr<Impl> m_impl;
 };
 }
+
+#endif

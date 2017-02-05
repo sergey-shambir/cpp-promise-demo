@@ -10,5 +10,6 @@ public:
 	virtual ~IEventLoop() = default;
 
 	virtual void Run() = 0;
+    virtual void DeferQuit() = 0;
 };
 }

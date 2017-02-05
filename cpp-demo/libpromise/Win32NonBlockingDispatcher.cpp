@@ -4,6 +4,8 @@
 #include <mutex>
 #include <boost/optional.hpp>
 
+#if defined(_WIN32)
+
 // WTL includes
 #define NOMINMAX
 #include <Windows.h>
@@ -105,3 +107,5 @@ void Win32NonBlockingDispatcher::Post(const Operation &operation)
 }
 
 }
+
+#endif

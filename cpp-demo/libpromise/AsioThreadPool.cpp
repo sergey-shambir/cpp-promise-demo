@@ -23,7 +23,7 @@ AsioThreadPool::~AsioThreadPool()
 	for (auto &thread : m_threads)
 	{
 		thread.join();
-	}
+    }
 }
 
 void AsioThreadPool::Post(const Operation &operation)
