@@ -23,10 +23,10 @@ public:
     /// Возврат либо исключение функции используется для заполнения Promise.
     /// Вызов callback'ов Promise выполняется в потоке callback'ов.
     /// Возвращает Promise от операции, запущенной через диспетчер задач фабрики.
-    template <class TFunction>
-    IPromisePtr<std::result_of_t<TFunction()> > MakePromise(TFunction && fn)
+    template <class Function>
+    IPromisePtr<std::result_of_t<Function()>> MakePromise(Function && fn)
     {
-        using ValueType = std::result_of_t<TFunction()>;
+        using ValueType = std::result_of_t<Function()>;
         using ResultType = boost::variant<std::exception_ptr, ValueType>;
 
         auto promise = std::make_shared<Promise<ValueType>>(m_callbackDispatcher);

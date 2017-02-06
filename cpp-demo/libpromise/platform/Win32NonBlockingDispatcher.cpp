@@ -57,6 +57,8 @@ private:
 
 	void DoWorkImpl()
 	{
+        // Reading count before execution protects us
+        //  from "add-execute-add-execute-..." infinitive loop.
 		unsigned operationsCount = ReadOperationsCount();
 		while (operationsCount--)
 		{

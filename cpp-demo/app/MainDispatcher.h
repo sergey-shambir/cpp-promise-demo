@@ -10,15 +10,22 @@ class MainDispatcher
 public:
     MainDispatcher();
 
+    /// Выполняет переданную функцию в фоновом потоке.
+    /// Возвращает Promise<T>, где T - тип, возвращаемый переданной функцией.
+    /// Колбек у Promise выполняется в основном потоке.
     template <class Function>
     decltype(auto) DoOnBackground(Function && function)
     {
         return m_backgroundPromiseFactory.MakePromise(std::forward<Function>(function));
     }
 
+    /// Выполняет переданную операцию в основном потоке.
     void DoOnMainThread(const isprom::Operation &operation);
 
+    /// Входит в основной цикл и исполняет его, пока не будет вызван QuitMainLoop.
     void EnterMainLoop();
+
+    /// Завершает ранее начатое выполнение основного цикла.
     void QuitMainLoop();
 
 private:
