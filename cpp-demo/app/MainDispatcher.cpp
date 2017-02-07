@@ -2,7 +2,7 @@
 #include "MainDispatcher.h"
 
 MainDispatcher::MainDispatcher()
-    : m_backgroundPromiseFactory(m_eventLoop, m_pool)
+    : m_backgroundPromiseFactory(m_pool, m_eventLoop)
 {
 }
 
