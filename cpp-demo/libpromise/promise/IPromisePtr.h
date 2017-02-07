@@ -38,11 +38,17 @@ public:
         m_promise->Catch(onRejected);
     }
 
+    void Cancel()const
+    {
+        m_promise->Cancel();
+    }
+
 #if 0
     template<class Function>
     IPromisePtr Continue(Function && fn)
     {
         using ResultValue = std::result_of_t<Function(ValueType)>;
+
 #error TODO
     }
 #endif

@@ -92,28 +92,30 @@ public:
         return m_canceled;
     }
 
-    void Resolve(const ValueType &value)
+    void Resolve(ValueType && value)
     {
+        CheckMovable<ValueType>();
         lock_guard lock(m_mutex);
         if (m_storage.which() != ISPROM_WHICH(StorageType, PendingState))
         {
             return;
         }
-        m_storage = value;
+        m_storage = std::move(value);
         if (m_then)
         {
             InvokeThen();
         }
     }
 
-    void Reject(const std::exception_ptr &exception)
+    void Reject(std::exception_ptr && exception)
     {
+        CheckMovable<std::exception_ptr>();
         lock_guard lock(m_mutex);
         if (m_storage.which() != ISPROM_WHICH(StorageType, PendingState))
         {
             return;
         }
-        m_storage = exception;
+        m_storage = std::move(exception);
         if (m_catch)
         {
             InvokeCatch();
@@ -135,6 +137,15 @@ private:
         ValueType,
         std::exception_ptr
     >;
+
+    template<class T>
+    inline void CheckMovable()
+    {
+        static_assert(std::is_nothrow_move_constructible<T>::value,
+                      "type should be nonthrow move constructible");
+        static_assert(std::is_nothrow_move_assignable<T>::value,
+                      "type should be nonthrow move assignable");
+    }
 
     void InvokeThen()
     {

@@ -5,11 +5,11 @@
 
 namespace isprom
 {
-template <class Value>
+template <class ValueType>
 class IPromise
 {
 public:
-    using ThenFunction = std::function<void(Value)>;
+    using ThenFunction = std::function<void(ValueType)>;
     using CatchFunction = std::function<void(std::exception_ptr const&)>;
 
     virtual ~IPromise() = default;

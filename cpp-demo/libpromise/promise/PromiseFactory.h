@@ -12,11 +12,7 @@ class PromiseFactory
 public:
     /// @param callDispatcher - диспетчер для запуска вызовов
     /// @param callbackDispatcher - диспетчер для запуска колбеков
-    explicit PromiseFactory(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher)
-        : m_callDispatcher(callDispatcher)
-        , m_callbackDispatcher(callbackDispatcher)
-    {
-    }
+    explicit PromiseFactory(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher);
 
     /// @brief Создаёт promise для функции, выполняемой в фоновом потоке
     /// Принимает функцию без аргументов, возвращающую результат операции
@@ -44,11 +40,11 @@ public:
             }
             if (result.which() == ISPROM_WHICH(ResultType, ValueType))
             {
-                promise->Resolve(boost::get<ValueType>(result));
+                promise->Resolve(std::move_if_noexcept(boost::get<ValueType>(result)));
             }
             else
             {
-                promise->Reject(boost::get<std::exception_ptr>(result));
+                promise->Reject(std::move_if_noexcept(boost::get<std::exception_ptr>(result)));
             }
         });
 
