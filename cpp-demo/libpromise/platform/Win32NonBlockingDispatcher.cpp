@@ -41,7 +41,7 @@ struct Win32NonBlockingDispatcher::Impl
 			mutex_lock lock(m_tasksMutex);
 			m_tasks.push(operation);
 		}
-		PostMessage(WM_DO_WORK);
+        ATLVERIFY(PostMessage(WM_DO_WORK));
 	}
 
 	BEGIN_MSG_MAP(Impl)
