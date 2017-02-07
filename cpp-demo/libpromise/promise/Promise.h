@@ -149,20 +149,36 @@ private:
 
     void InvokeThen()
     {
-        auto sharedThis = this->shared_from_this();
-        m_dispatcher.Post([sharedThis] {
-            auto &value = boost::get<ValueType>(sharedThis->m_storage);
-            sharedThis->m_then(std::move(value));
-        });
+        try
+        {
+            auto sharedThis = this->shared_from_this();
+            m_dispatcher.Post([sharedThis] {
+                auto &value = boost::get<ValueType>(sharedThis->m_storage);
+                sharedThis->m_then(std::move(value));
+            });
+        }
+        catch (...)
+        {
+            // It's too bad to forget promises.
+            std::terminate();
+        }
     }
 
     void InvokeCatch()
     {
-        auto sharedThis = this->shared_from_this();
-        m_dispatcher.Post([sharedThis] {
-            auto &exception = boost::get<std::exception_ptr>(sharedThis->m_storage);
-            sharedThis->m_catch(exception);
-        });
+        try
+        {
+            auto sharedThis = this->shared_from_this();
+            m_dispatcher.Post([sharedThis] {
+                auto &exception = boost::get<std::exception_ptr>(sharedThis->m_storage);
+                sharedThis->m_catch(exception);
+            });
+        }
+        catch (...)
+        {
+            // It's too bad to forget promises.
+            std::terminate();
+        }
     }
 
     IDispatcher &m_dispatcher;
