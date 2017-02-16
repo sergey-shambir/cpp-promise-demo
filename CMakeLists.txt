@@ -16,6 +16,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CEF_ROOT}/cmake")
 # Выполняем FindCEF.cmake, который теперь попадает в CMAKE_MODULE_PATH.
 find_package(CEF REQUIRED)
 
+# Добавляем в список путей модулей CMake путь к ./cmake
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 #
 # Define CEF-based targets.
 #
@@ -33,6 +36,6 @@ add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 add_subdirectory(libpromise)
 add_subdirectory(libcefbridge)
 add_subdirectory(console-app)
-#add_subdirectory(cef-app)
+add_subdirectory(cef_app)
 
 
