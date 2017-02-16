@@ -33,3 +33,10 @@
 ipch
 .vs
 *.vcxproj.user
+
+# CEF subdirectory
+cef
+
+# QtCreator intermediate files
+*.txt.user
+
