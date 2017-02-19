@@ -4,6 +4,7 @@
 #include "platform/AsioEventLoop.h"
 #include "platform/Win32EventLoop.h"
 #include "promise/PromiseFactory.h"
+#include "FutureFactory.h"
 
 class MainDispatcher
 {
@@ -35,5 +36,9 @@ private:
     isprom::AsioEventLoop m_eventLoop;
 #endif
     isprom::AsioThreadPool m_pool;
+#if OPTION_USE_FUTURE_FACTORY
+    isprom::FutureFactory m_backgroundPromiseFactory;
+#else
     isprom::PromiseFactory m_backgroundPromiseFactory;
+#endif
 };

@@ -7,21 +7,21 @@
 namespace isprom
 {
 class Win32EventLoop
-	: public IEventLoop
-	, boost::noncopyable
+    : public IEventLoop
+    , boost::noncopyable
 {
 public:
-	Win32EventLoop();
-	~Win32EventLoop();
+    Win32EventLoop();
+    ~Win32EventLoop();
 
-	void Post(const Operation &operation) override;
+    void Post(const Operation &operation) override;
     void Run() override;
     void DeferQuit() override;
 
 private:
-	struct Impl;
+    struct Impl;
 
-	std::unique_ptr<Impl> m_impl;
+    std::unique_ptr<Impl> m_impl;
 };
 }
 

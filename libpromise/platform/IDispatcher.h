@@ -6,8 +6,8 @@ namespace isprom
 class IDispatcher
 {
 public:
-	virtual ~IDispatcher() = default;
+    virtual ~IDispatcher() = default;
 
-	virtual void Post(const Operation &operation) = 0;
+    virtual void Post(const Operation &operation) = 0;
 };
 }

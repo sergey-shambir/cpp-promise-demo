@@ -19,30 +19,46 @@ void Demonstrate(MainDispatcher &dispatcher)
 {
     auto p1 = dispatcher.DoOnBackground([] {
         PrintJobThreadId("p1 procedure");
-        return std::make_unique<int>(42);
+        return 42;
     });
     auto p2 = dispatcher.DoOnBackground([] {
         PrintJobThreadId("p2 procedure");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        return std::make_unique<int>(38);
+        return 38;
     });
     auto p3 = dispatcher.DoOnBackground([] {
         PrintJobThreadId("p3 procedure");
-        return std::make_shared<int>(46);
+        return 46;
     });
+#if OPTION_USE_FUTURE_FACTORY
+    p3.then([&dispatcher](auto value) {
+        PrintJobThreadId("p3 then");
+        std::cerr << "p3 value = " << value.get() << std::endl;
+    });
+    p2.then([&dispatcher](auto value) {
+        PrintJobThreadId("p2 then");
+        std::cerr << "p2 value = " << *(value.get()) << std::endl;
+    });
+    p1.then([&dispatcher](auto value) {
+        PrintJobThreadId("p1 then");
+        std::cerr << "p1 value = " << *(value.get()) << std::endl;
+        dispatcher.QuitMainLoop();
+    });
+#else
     p3.Then([p2, p1, &dispatcher](auto value) {
         PrintJobThreadId("p3 then");
-        std::cerr << "p3 value = " << *value << std::endl;
+        std::cerr << "p3 value = " << value << std::endl;
         p2.Then([p1, &dispatcher](auto value) {
             PrintJobThreadId("p2 then");
-            std::cerr << "p2 value = " << *value << std::endl;
+            std::cerr << "p2 value = " << value << std::endl;
             p1.Then([&dispatcher](auto value) {
                 PrintJobThreadId("p1 then");
-                std::cerr << "p1 value = " << *value << std::endl;
+                std::cerr << "p1 value = " << value << std::endl;
                 dispatcher.QuitMainLoop();
             });
         });
     });
+#endif
 }
 
 int main()

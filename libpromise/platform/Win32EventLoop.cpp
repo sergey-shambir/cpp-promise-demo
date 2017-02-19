@@ -20,11 +20,11 @@ struct Win32EventLoop::Impl
         m_dispatcher.Post(operation);
     }
 
-	void Run()
-	{
-		WTL::CMessageLoop loop;
-		loop.Run();
-	}
+    void Run()
+    {
+        WTL::CMessageLoop loop;
+        loop.Run();
+    }
 
     void DeferQuit()
     {
@@ -32,11 +32,11 @@ struct Win32EventLoop::Impl
     }
 
 private:
-	Win32NonBlockingDispatcher m_dispatcher;
+    Win32NonBlockingDispatcher m_dispatcher;
 };
 
 Win32EventLoop::Win32EventLoop()
-	: m_impl(std::make_unique<Impl>())
+    : m_impl(std::make_unique<Impl>())
 {
 }
 
@@ -46,7 +46,7 @@ Win32EventLoop::~Win32EventLoop()
 
 void Win32EventLoop::Run()
 {
-	m_impl->Run();
+    m_impl->Run();
 }
 
 void Win32EventLoop::DeferQuit()
@@ -56,7 +56,7 @@ void Win32EventLoop::DeferQuit()
 
 void Win32EventLoop::Post(const Operation &operation)
 {
-	m_impl->Post(operation);
+    m_impl->Post(operation);
 }
 
 }
