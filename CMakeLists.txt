@@ -5,6 +5,11 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 project(cpp-promise-demo)
 
+include(cmake/use-msvc-static-runtime.cmake)
+
+# Заставим MSVC использовать static версию C++ runtime вместо DLL
+# include(cmake/use-msvc-static-runtime.cmake)
+
 # --- Свойства для сборки с CEF ---
 
 # Use folders in the resulting project files.
