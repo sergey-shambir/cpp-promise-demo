@@ -2,27 +2,24 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#ifndef CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
-#define CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
+#pragma once
 
 #include "include/cef_app.h"
 
 // Implement application-level callbacks for the browser process.
 class SimpleApp : public CefApp,
-                  public CefBrowserProcessHandler {
- public:
-  SimpleApp();
+                  public CefBrowserProcessHandler
+{
+public:
+    SimpleApp();
 
-  // CefApp methods:
-  virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
-      OVERRIDE { return this; }
+    // CefApp methods:
+    CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override;
 
-  // CefBrowserProcessHandler methods:
-  virtual void OnContextInitialized() OVERRIDE;
+    // CefBrowserProcessHandler methods:
+    void OnContextInitialized() override;
 
- private:
-  // Include the default reference counting implementation.
-  IMPLEMENT_REFCOUNTING(SimpleApp);
+private:
+    // Include the default reference counting implementation.
+    IMPLEMENT_REFCOUNTING(SimpleApp);
 };
-
-#endif  // CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_

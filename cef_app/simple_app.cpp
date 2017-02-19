@@ -53,7 +53,13 @@ class SimpleWindowDelegate : public CefWindowDelegate {
 
 }  // namespace
 
-SimpleApp::SimpleApp() {
+SimpleApp::SimpleApp()
+{
+}
+
+CefRefPtr<CefBrowserProcessHandler> SimpleApp::GetBrowserProcessHandler()
+{
+    return this;
 }
 
 void SimpleApp::OnContextInitialized() {
