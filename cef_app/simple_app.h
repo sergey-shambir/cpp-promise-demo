@@ -8,7 +8,7 @@
 
 // Implement application-level callbacks for the browser process.
 class SimpleApp : public CefApp,
-                  public CefBrowserProcessHandler
+    public CefBrowserProcessHandler
 {
 public:
     SimpleApp();

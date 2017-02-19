@@ -2,7 +2,7 @@
 include(../cmake/use-msvc-static-runtime.cmake)
 
 # Добавляем библиотеку libcefbridge
-file(GLOB SRC_CEFBRIDGE "*.cpp" "*.h")
+file(GLOB SRC_CEFBRIDGE "*.cpp" "*.h" "renderer/*.cpp" "renderer/*.h" "browser/*.cpp" "browser/*.h" "common/*.cpp" "common/*.h")
 add_library(libcefbridge ${SRC_CEFBRIDGE})
 
 # Добавляем путь к заголовкам cef

@@ -104,7 +104,7 @@ endif()
 
 if(OS_WINDOWS)
   # Executable target.
-  add_executable(${CEF_TARGET} WIN32 ${SRC_TARGET})
+  add_executable(${CEF_TARGET} WIN32 ${SRC_TARGET} ${CMAKE_CURRENT_SOURCE_DIR}/cef_app.rc)
   add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})

@@ -16,3 +16,5 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+
+#include "include/cef_app.h"

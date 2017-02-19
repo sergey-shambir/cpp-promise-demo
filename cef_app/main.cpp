@@ -1,4 +1,4 @@
-#include "cefsimple/simple_app.h"
+#include "simple_app.h"
 #include "include/base/cef_logging.h"
 #include "cef_utils.h"
 
@@ -14,12 +14,12 @@ namespace
 int XErrorHandlerImpl(Display *display, XErrorEvent *event)
 {
     LOG(WARNING)
-          << "X error received: "
-          << "type " << event->type << ", "
-          << "serial " << event->serial << ", "
-          << "error_code " << static_cast<int>(event->error_code) << ", "
-          << "request_code " << static_cast<int>(event->request_code) << ", "
-          << "minor_code " << static_cast<int>(event->minor_code);
+        << "X error received: "
+        << "type " << event->type << ", "
+        << "serial " << event->serial << ", "
+        << "error_code " << static_cast<int>(event->error_code) << ", "
+        << "request_code " << static_cast<int>(event->request_code) << ", "
+        << "minor_code " << static_cast<int>(event->minor_code);
     return 0;
 }
 
@@ -38,8 +38,8 @@ int RunApplication(const CefMainArgs &args)
     // if this is a sub-process, executes the appropriate logic.
     int exit_code = CefExecuteProcess(args, nullptr, nullptr);
     if (exit_code >= 0) {
-      // The sub-process has completed so return here.
-      return exit_code;
+        // The sub-process has completed so return here.
+        return exit_code;
     }
 
 #if defined(__linux__)
@@ -76,9 +76,9 @@ int RunApplication(const CefMainArgs &args)
 // Entry point function for all processes.
 int main(int argc, char* argv[])
 {
-  // Provide CEF with command-line arguments.
-  CefMainArgs mainArgs(argc, argv);
-  return RunApplication(mainArgs);
+    // Provide CEF with command-line arguments.
+    CefMainArgs mainArgs(argc, argv);
+    return RunApplication(mainArgs);
 }
 
 #endif
@@ -87,9 +87,9 @@ int main(int argc, char* argv[])
 
 // Entry point function for all processes.
 int APIENTRY wWinMain(HINSTANCE hInstance,
-                      HINSTANCE hPrevInstance,
-                      LPTSTR    lpCmdLine,
-                      int       nCmdShow)
+    HINSTANCE hPrevInstance,
+    LPTSTR    lpCmdLine,
+    int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
