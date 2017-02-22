@@ -20,32 +20,32 @@ namespace {
 class SimpleWindowDelegate : public CefWindowDelegate {
 public:
     explicit SimpleWindowDelegate(CefRefPtr<CefBrowserView> browser_view)
-        : browser_view_(browser_view) {
+        : m_browserView(browser_view) {
     }
 
     void OnWindowCreated(CefRefPtr<CefWindow> window) override {
         // Add the browser view and show the window.
-        window->AddChildView(browser_view_);
+        window->AddChildView(m_browserView);
         window->Show();
 
         // Give keyboard focus to the browser view.
-        browser_view_->RequestFocus();
+        m_browserView->RequestFocus();
     }
 
     void OnWindowDestroyed(CefRefPtr<CefWindow> window) override {
-        browser_view_ = NULL;
+        m_browserView = NULL;
     }
 
     bool CanClose(CefRefPtr<CefWindow> window) override {
         // Allow the window to close if the browser says it's OK.
-        CefRefPtr<CefBrowser> browser = browser_view_->GetBrowser();
+        CefRefPtr<CefBrowser> browser = m_browserView->GetBrowser();
         if (browser)
             return browser->GetHost()->TryCloseBrowser();
         return true;
     }
 
 private:
-    CefRefPtr<CefBrowserView> browser_view_;
+    CefRefPtr<CefBrowserView> m_browserView;
 
     IMPLEMENT_REFCOUNTING(SimpleWindowDelegate);
     DISALLOW_COPY_AND_ASSIGN(SimpleWindowDelegate);

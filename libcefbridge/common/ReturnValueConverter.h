@@ -71,28 +71,6 @@ inline CefRefPtr<CefValue> ConvertReturnValue<>(const CefRefPtr<CefValue> &pValu
 	return pValue;
 }
 
-template<>
-inline CefRefPtr<CefValue> ConvertReturnValue<>(const json_spirit::wArray &pValue)
-{
-	CJsonSpiritConverter converter;
-	auto pList = converter.ConvertJsonArray(pValue);
-
-	auto pRet = CefValue::Create();
-	pRet->SetList(pList);
-	return pRet;
-}
-
-template<>
-inline CefRefPtr<CefValue> ConvertReturnValue<>(const json_spirit::wObject &pValue)
-{
-	CJsonSpiritConverter converter;
-	auto pList = converter.ConvertJsonObject(pValue);
-
-	auto pRet = CefValue::Create();
-	pRet->SetDictionary(pList);
-	return pRet;
-}
-
 }
 
 }
