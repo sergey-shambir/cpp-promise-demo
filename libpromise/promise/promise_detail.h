@@ -17,7 +17,8 @@ using WhichIndex = typename boost::mpl::find<
         >::type,
         VariantCase
     >::type::pos;
-}
-}
 
-#define ISPROM_WHICH(VariantType, VariantCase) (::isprom::detail::WhichIndex<VariantType, VariantCase>::value)
+template <class VariantType, class VariantCase>
+constexpr int VariantIndex = WhichIndex<VariantType, VariantCase>::value;
+}
+}

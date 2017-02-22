@@ -38,7 +38,7 @@ public:
             {
                 result = std::current_exception();
             }
-            if (result.which() == ISPROM_WHICH(ResultType, ValueType))
+            if (result.which() == detail::WhichIndex<ResultType, ValueType>::value)
             {
                 promise->Resolve(std::move_if_noexcept(boost::get<ValueType>(result)));
             }

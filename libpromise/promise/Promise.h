@@ -37,10 +37,10 @@ public:
         //  which-индекс извлекается с помощью Boost MPL.
         switch (m_storage.which())
         {
-        case ISPROM_WHICH(StorageType, PendingState):
+        case detail::VariantIndex<StorageType, PendingState>:
             m_then = onFulfilled;
             break;
-        case ISPROM_WHICH(StorageType, ValueType):
+        case detail::VariantIndex<StorageType, ValueType>:
             m_then = onFulfilled;
             InvokeThen();
             break;
@@ -61,10 +61,10 @@ public:
         //  which-индекс извлекается с помощью Boost MPL.
         switch (m_storage.which())
         {
-        case ISPROM_WHICH(StorageType, PendingState):
+        case detail::VariantIndex<StorageType, PendingState>:
             m_catch = onRejected;
             break;
-        case ISPROM_WHICH(StorageType, std::exception_ptr):
+        case detail::VariantIndex<StorageType, std::exception_ptr>:
             m_catch = onRejected;
             InvokeCatch();
             break;
@@ -77,7 +77,7 @@ public:
     {
         {
             lock_guard lock(m_mutex);
-            if (m_storage.which() == ISPROM_WHICH(StorageType, CanceledTag))
+            if (m_storage.which() == detail::VariantIndex<StorageType, CanceledTag>)
             {
                 return;
             }
@@ -96,7 +96,7 @@ public:
     {
         CheckMovable<ValueType>();
         lock_guard lock(m_mutex);
-        if (m_storage.which() != ISPROM_WHICH(StorageType, PendingState))
+        if (m_storage.which() != detail::VariantIndex<StorageType, PendingState>)
         {
             return;
         }
@@ -111,7 +111,7 @@ public:
     {
         CheckMovable<std::exception_ptr>();
         lock_guard lock(m_mutex);
-        if (m_storage.which() != ISPROM_WHICH(StorageType, PendingState))
+        if (m_storage.which() != detail::VariantIndex<StorageType, PendingState>)
         {
             return;
         }
