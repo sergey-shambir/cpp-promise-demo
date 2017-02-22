@@ -25,6 +25,11 @@ public:
     {
     }
 
+	IDispatcher &GetDispatcher() override
+	{
+		return m_dispatcher;
+	}
+
     void Then(const ThenFunction &onFulfilled) override
     {
         lock_guard lock(m_mutex);

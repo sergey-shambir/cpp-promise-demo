@@ -43,15 +43,71 @@ public:
         m_promise->Cancel();
     }
 
-#if 0
+	// Создаёт продолжение (continuation) асинхронной операции
+	// с указанным исполнителем для вызова и обратного вызова,
+	//  передаёт результат предыдущей подзадачи в новую функцию как параметр.
     template<class Function>
-    IPromisePtr Continue(Function && fn)
-    {
-        using ResultValue = std::result_of_t<Function(ValueType)>;
+    IPromisePtr ThenDo(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher, Function && fn)
+	{
+		using ResultType = decltype(Function(ValueType));
+		using ResultPromise = Promise<ResultType>;
 
-#error TODO
+		// Если диспетчер тот же самый, выполняем продолжение безотлагательно.
+		const bool immediateMode = (std::addressof(m_promise->GetDispatcher()) == std::addressof(callDispatcher));
+
+		auto promise = std::make_shared<ResultPromise>(callbackDispatcher);
+		m_promise->Then([immediateMode, promise, fn](ValueType value) {
+			auto task = [promise, fn] {
+				try
+				{
+					auto value = fn(std::move(value));
+					promise->Resolve(std::move(value));
+				}
+				catch (...)
+				{
+					promise->Reject(std::current_exception());
+				}
+			};
+			if (immediateMode)
+			{
+				task();
+			}
+			else
+			{
+				callDispatcher.Post(task);
+			}
+		});
+		m_promise->Catch([immediateMode, promise](const std::exception &exception) {
+			auto task = std::bind(ResultPromise::Reject, promise, exception);
+			if (immediateMode)
+			{
+				task();
+			}
+			else
+			{
+				callDispatcher.Post(task);
+			}
+		});
+
+		return promise;
     }
-#endif
+
+	// Создаёт продолжение (continuation) асинхронной операции
+	// с указанным исполнителем для вызова,
+	//  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+	template<class Function>
+	IPromisePtr ThenDo(IDispatcher &callDispatcher, Function && fn)
+	{
+		return ThenDo(callDispatcher, m_promise->GetDispatcher(), std::forward<Function>(fn));
+	}
+
+	// Создаёт продолжение (continuation) асинхронной операции,
+	//  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+	template<class Function>
+	IPromisePtr ThenDo(Function && fn)
+	{
+		return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(fn));
+	}
 
 private:
     std::shared_ptr<IPromiseType> m_promise;

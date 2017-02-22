@@ -20,7 +20,7 @@ public:
     /// Вызов callback'ов Promise выполняется в потоке callback'ов.
     /// Возвращает Promise от операции, запущенной через диспетчер задач фабрики.
     template <class Function>
-    IPromisePtr<std::result_of_t<Function()>> MakePromise(Function && fn)
+    decltype(auto) MakePromise(Function && fn)
     {
         using ValueType = std::result_of_t<Function()>;
         using ResultType = boost::variant<std::exception_ptr, ValueType>;

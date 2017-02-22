@@ -6,59 +6,43 @@
 #include <iostream>
 #include <thread>
 
-std::mutex g_printJobMutex;
 
-void PrintJobThreadId(const char job[])
+void PrintSync(const char message[])
 {
-    std::lock_guard<std::mutex> lock(g_printJobMutex);
+	static std::mutex printMutex;
+    std::lock_guard<std::mutex> lock(printMutex);
     const auto id = std::this_thread::get_id();
-    std::cerr << "Doing '" << job << "' on thread " << id << std::endl;
+    std::cerr << "Doing '" << message << "' on thread " << id << std::endl;
 }
 
 void Demonstrate(MainDispatcher &dispatcher)
 {
     auto p1 = dispatcher.DoOnBackground([] {
-        PrintJobThreadId("p1 procedure");
+        PrintSync("p1 procedure");
         return 42;
     });
     auto p2 = dispatcher.DoOnBackground([] {
-        PrintJobThreadId("p2 procedure");
+        PrintSync("p2 procedure");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         return 38;
     });
     auto p3 = dispatcher.DoOnBackground([] {
-        PrintJobThreadId("p3 procedure");
+        PrintSync("p3 procedure");
         return 46;
     });
-#if OPTION_USE_FUTURE_FACTORY
-    p3.then([&dispatcher](auto value) {
-        PrintJobThreadId("p3 then");
-        std::cerr << "p3 value = " << value.get() << std::endl;
-    });
-    p2.then([&dispatcher](auto value) {
-        PrintJobThreadId("p2 then");
-        std::cerr << "p2 value = " << *(value.get()) << std::endl;
-    });
-    p1.then([&dispatcher](auto value) {
-        PrintJobThreadId("p1 then");
-        std::cerr << "p1 value = " << *(value.get()) << std::endl;
-        dispatcher.QuitMainLoop();
-    });
-#else
     p3.Then([p2, p1, &dispatcher](auto value) {
-        PrintJobThreadId("p3 then");
+        PrintSync("p3 then");
         std::cerr << "p3 value = " << value << std::endl;
         p2.Then([p1, &dispatcher](auto value) {
-            PrintJobThreadId("p2 then");
+            PrintSync("p2 then");
             std::cerr << "p2 value = " << value << std::endl;
             p1.Then([&dispatcher](auto value) {
-                PrintJobThreadId("p1 then");
+                PrintSync("p1 then");
                 std::cerr << "p1 value = " << value << std::endl;
                 dispatcher.QuitMainLoop();
             });
         });
     });
-#endif
 }
 
 int main()

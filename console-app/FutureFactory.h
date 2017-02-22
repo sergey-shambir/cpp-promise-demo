@@ -22,7 +22,7 @@ public:
     template <class Function>
     decltype(auto) MakePromise(Function && function)
     {
-        using ResultType = std::result_of_t<Function()>;
+        using ResultType = decltype(Function());
         using PromiseType = boost::promise<ResultType>;
         using FutureType = boost::future<ResultType>;
 
