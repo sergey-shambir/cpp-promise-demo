@@ -1,24 +1,22 @@
 #pragma once
 
-#include "includes/cef_app.h"
-#include "ispringutils/datetime/Timestamp.h"
+#include "include/cef_app.h"
 #include "is_any_of.h"
-#include <json_spirit_value.h>
+#include <json.hpp>
 
-namespace apputils
+namespace cefbridge
 {
 namespace detail
 {
 
-class CJavascriptArgumentsAdapter
+class JavascriptArgumentsAdapter
 {
 public:
 	template <class T>
 	using CanConvertType = is_any_of<T, bool, double, std::string, std::wstring,
-		ispringutils::datetime::CTimestamp, json_spirit::wArray, json_spirit::wObject,
-		CefRefPtr<CefListValue>, CefRefPtr<CefDictionaryValue>, CefRefPtr<CefBinaryValue>>;
+        nlohmann::json, CefRefPtr<CefListValue>, CefRefPtr<CefDictionaryValue>, CefRefPtr<CefBinaryValue>>;
 
-	CJavascriptArgumentsAdapter(const CefRefPtr<CefListValue> &arguments);
+    JavascriptArgumentsAdapter(const CefRefPtr<CefListValue> &arguments);
 	void CheckArgumentsCount(size_t expectedCount)const;
 
 	template<class T>
@@ -34,12 +32,10 @@ private:
 	void Convert(double &destination, size_t index)const;
 	void Convert(std::string &destination, size_t index)const;
 	void Convert(std::wstring &destination, size_t index)const;
-	void Convert(json_spirit::wArray &destination, size_t index)const;
-	void Convert(json_spirit::wObject &destination, size_t index)const;
+    void Convert(nlohmann::json &destination, size_t index)const;
 	void Convert(CefRefPtr<CefListValue> &destination, size_t index)const;
 	void Convert(CefRefPtr<CefDictionaryValue> &destination, size_t index)const;
-	void Convert(CefRefPtr<CefBinaryValue> &destination, size_t index)const;
-	void Convert(ispringutils::datetime::CTimestamp &destination, size_t index)const;
+    void Convert(CefRefPtr<CefBinaryValue> &destination, size_t index)const;
 	void CheckArgument(size_t index, CefValueType type)const;
 
 	CefRefPtr<CefListValue> m_arguments;

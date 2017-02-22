@@ -1,10 +1,10 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "JavascriptArgumentsAdapter.h"
-#include "libcef_client/common/BinaryValueUtils.h"
-#include "../JsonSpiritConverter.h"
 
 namespace
 {
+using nlohmann::json;
+
 std::string GetCefValueTypename(CefValueType type)
 {
 	switch (type)
@@ -31,19 +31,90 @@ std::string GetCefValueTypename(CefValueType type)
 	assert(false);
 	return "Invalid Value";
 }
+
+class JsonConverter
+{
+public:
+    json operator()(const CefRefPtr<CefValue> &value)
+    {
+        switch (value->GetType())
+        {
+        case VTYPE_DICTIONARY:
+            return operator ()(value->GetDictionary());
+        case VTYPE_LIST:
+            return operator ()(value->GetList());
+        case VTYPE_STRING:
+            return operator ()(value->GetString());
+        case VTYPE_BOOL:
+            return operator ()(value->GetBool());
+        case VTYPE_DOUBLE:
+            return operator ()(value->GetDouble());
+        case VTYPE_INT:
+            return operator ()(value->GetInt());
+        case VTYPE_BINARY:
+            throw std::runtime_error("Cannot convert CEF binary value to JSON");
+        default:
+            throw std::runtime_error("Unexpected CEF value type");
+        }
+    }
+
+    json operator()(const CefRefPtr<CefDictionaryValue> &dict)
+    {
+        CefDictionaryValue::KeyList keys;
+        dict->GetKeys(keys);
+        json obj = json::object();
+        for (const CefString &key : keys)
+        {
+            obj[key.ToString()] = operator ()(dict->GetValue(key));
+        }
+
+        return obj;
+    }
+
+    json operator()(const CefRefPtr<CefListValue> &list)
+    {
+        json arr = json::array();
+        for (int i = 0, count = int(list->GetSize()); i < count; ++i)
+        {
+            arr.push_back(operator()(list->GetValue(i)));
+        }
+
+        return arr;
+    }
+
+    json operator()(const CefString &value)
+    {
+        return json(value.ToString());
+    }
+
+    json operator()(bool value)
+    {
+        return json(value);
+    }
+
+    json operator()(double value)
+    {
+        return json(value);
+    }
+
+    json operator()(int value)
+    {
+        return json(value);
+    }
+};
 }
 
-namespace apputils
+namespace cefbridge
 {
 namespace detail
 {
 
-CJavascriptArgumentsAdapter::CJavascriptArgumentsAdapter(const CefRefPtr<CefListValue> &arguments)
+JavascriptArgumentsAdapter::JavascriptArgumentsAdapter(const CefRefPtr<CefListValue> &arguments)
 	: m_arguments(arguments)
 {
 }
 
-void CJavascriptArgumentsAdapter::CheckArgumentsCount(size_t expectedCount)const
+void JavascriptArgumentsAdapter::CheckArgumentsCount(size_t expectedCount)const
 {
 	if (expectedCount != m_arguments->GetSize())
 	{
@@ -53,106 +124,73 @@ void CJavascriptArgumentsAdapter::CheckArgumentsCount(size_t expectedCount)const
 	}
 }
 
-void CJavascriptArgumentsAdapter::Convert(bool & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(bool & destination, size_t index) const
 {
 	assert(index < static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_BOOL);
 	destination = m_arguments->GetBool(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(int & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(int & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_INT);
 	destination = m_arguments->GetInt(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(double & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(double & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_DOUBLE);
 	destination = m_arguments->GetDouble(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(std::string & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(std::string & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_STRING);
 	destination = m_arguments->GetString(static_cast<int>(index)).ToString();
 }
 
-void CJavascriptArgumentsAdapter::Convert(std::wstring & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(std::wstring & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_STRING);
 	destination = m_arguments->GetString(static_cast<int>(index)).ToWString();
 }
 
-void CJavascriptArgumentsAdapter::Convert(CefRefPtr<CefListValue> & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(CefRefPtr<CefListValue> & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_LIST);
 	destination = m_arguments->GetList(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(CefRefPtr<CefDictionaryValue> &destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(CefRefPtr<CefDictionaryValue> &destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_DICTIONARY);
 	destination = m_arguments->GetDictionary(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(CefRefPtr<CefBinaryValue> & destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(CefRefPtr<CefBinaryValue> & destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_BINARY);
 	destination = m_arguments->GetBinary(static_cast<int>(index));
 }
 
-void CJavascriptArgumentsAdapter::Convert(ispringutils::datetime::CTimestamp & destination, size_t index) const
-{
-	assert(index <= static_cast<int>(INT_MAX));
-	CheckArgument(index, VTYPE_BINARY);
-	auto pBinaryValue = m_arguments->GetBinary(static_cast<int>(index));
-
-	CefTime datetime;
-	if (!cefclient::CBinaryValueUtils::ReadDatetime(pBinaryValue, datetime))
-	{
-		const std::string indexStr = std::to_string(index);
-		throw std::invalid_argument("Argument #" + indexStr + " is not valid serialized Date object");
-	}
-
-	std::tm stdDatetime = { 0 };
-	stdDatetime.tm_year = datetime.year - 1900;
-	stdDatetime.tm_mon = datetime.month - 1;
-	stdDatetime.tm_mday = datetime.day_of_month;
-	stdDatetime.tm_hour = datetime.hour;
-	stdDatetime.tm_min = datetime.minute;
-	stdDatetime.tm_sec = datetime.second;
-	destination = ispringutils::datetime::CTimestamp(stdDatetime);
-}
-
-void CJavascriptArgumentsAdapter::Convert(json_spirit::wArray &destination, size_t index) const
+void JavascriptArgumentsAdapter::Convert(nlohmann::json &destination, size_t index) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	CheckArgument(index, VTYPE_LIST);
 	auto pListValue = m_arguments->GetList(static_cast<int>(index));
 
-	CJsonSpiritConverter converter;
-	destination = converter.ConvertCefList(pListValue);
+    JsonConverter converter;
+    destination = converter(pListValue);
 }
 
-void CJavascriptArgumentsAdapter::Convert(json_spirit::wObject &destination, size_t index) const
-{
-	assert(index <= static_cast<int>(INT_MAX));
-	CheckArgument(index, VTYPE_DICTIONARY);
-	auto pDictValue = m_arguments->GetDictionary(static_cast<int>(index));
-
-	CJsonSpiritConverter converter;
-	destination = converter.ConvertCefDict(pDictValue);
-}
-
-void CJavascriptArgumentsAdapter::CheckArgument(size_t index, CefValueType type) const
+void JavascriptArgumentsAdapter::CheckArgument(size_t index, CefValueType type) const
 {
 	assert(index <= static_cast<int>(INT_MAX));
 	if (index >= m_arguments->GetSize())

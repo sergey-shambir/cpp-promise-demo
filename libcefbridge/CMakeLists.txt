@@ -7,7 +7,8 @@ add_library(libcefbridge ${SRC_CEFBRIDGE})
 
 # Добавляем путь к заголовкам cef
 target_include_directories(libcefbridge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../cef)
+target_include_directories(libcefbridge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty)
 
 if(UNIX)
-set_target_properties(libcefbridge PROPERTIES COMPILE_FLAGS "-std=c++14 -Wall -Wextra")
+set_target_properties(libcefbridge PROPERTIES COMPILE_FLAGS "-std=c++14 -Wall -Wextra -Wno-unused")
 endif(UNIX)

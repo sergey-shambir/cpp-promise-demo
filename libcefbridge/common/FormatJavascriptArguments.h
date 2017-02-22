@@ -1,10 +1,9 @@
 #pragma once
 
 #include "is_any_of.h"
-#include "ispringutils/datetime/Timestamp.h"
-#include <json_spirit_value.h>
+#include <json.hpp>
 
-namespace apputils
+namespace cefbridge
 {
 namespace detail
 {
@@ -13,8 +12,7 @@ class JsFormatter
 {
 public:
 	template <class T>
-	using CanFormatType = is_any_of<T, bool, double, std::string, std::wstring, ispringutils::datetime::CTimestamp,
-		json_spirit::Array, json_spirit::wArray, json_spirit::Value, json_spirit::wValue, json_spirit::Object, json_spirit::wObject>;
+    using CanFormatType = is_any_of<T, bool, double, std::string, std::wstring, nlohmann::json>;
 
 	void Begin();
 	std::string Finalize();
@@ -22,7 +20,8 @@ public:
 	template <class T>
 	void operator ()(T && value)
 	{
-		static_assert(CanFormatType<std::decay_t<T>>{}, "Cannot map argument type to Javascript, change type or cast it explicitly");
+        static_assert(CanFormatType<std::decay_t<T>>{},
+            "Cannot map argument type to Javascript, change type or use cast");
 		Add(value);
 	}
 
@@ -30,14 +29,8 @@ private:
 	void Add(bool value);
 	void Add(double value);
 	void Add(const std::string &value);
-	void Add(const std::wstring &value);
-	void Add(ispringutils::datetime::CTimestamp timestamp);
-	void Add(const json_spirit::wArray &value);
-	void Add(const json_spirit::Array &value);
-	void Add(const json_spirit::wObject &value);
-	void Add(const json_spirit::Object &value);
-	void Add(const json_spirit::wValue &value);
-	void Add(const json_spirit::Value &value);
+    void Add(const std::wstring &value);
+    void Add(const nlohmann::json &value);
 	void BeforeAddArgument();
 
 	bool m_addComma = false;

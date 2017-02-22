@@ -64,7 +64,6 @@ private:
     BrowserList m_browserList;
 	bool m_isClosing;
 
-
     // Include the default reference counting implementation.
     IMPLEMENT_REFCOUNTING(SimpleHandler);
 };

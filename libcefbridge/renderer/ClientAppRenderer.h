@@ -6,50 +6,42 @@
 
 #include <set>
 
-#include "tests/shared/common/client_app.h"
+#include "../common/ClientApp.h"
 
-namespace client {
+namespace cefbridge
+{
+
+class ClientAppRenderer;
 
 class IClientAppRendererDelegate
 {
 public:
-	virtual void OnRenderThreadCreated(CefRefPtr<ClientAppRenderer> app, CefRefPtr<CefListValue> extra_info)
-	{
-		(void)app;
+    virtual void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info)
+    {
 		(void)extra_info;
 	}
 
-	virtual void OnWebKitInitialized(CefRefPtr<ClientAppRenderer> app)
-	{
-		(void)app;
+    virtual void OnWebKitInitialized()
+    {
 	}
 
-	virtual void OnBrowserCreated(CefRefPtr<ClientAppRenderer> app, CefRefPtr<CefBrowser> browser)
-	{
-		(void)app;
+    virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser)
+    {
 		(void)browser;
 	}
 
-	virtual void OnBrowserDestroyed(CefRefPtr<ClientAppRenderer> app, CefRefPtr<CefBrowser> browser)
-	{
-		(void)app;
+    virtual void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser)
+    {
 		(void)browser;
-	}
+    }
 
-	virtual CefRefPtr<CefLoadHandler> GetLoadHandler(CefRefPtr<ClientAppRenderer> app)
-	{
-		(void)app;
-		return nullptr;
-	}
-
-	virtual bool OnBeforeNavigation(CefRefPtr<ClientAppRenderer> app,
+    virtual bool OnBeforeNavigation(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
 		cef_navigation_type_t navigation_type,
 		bool is_redirect)
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)frame;
 		(void)request;
@@ -57,36 +49,33 @@ public:
 		return false;
 	}
 
-	virtual void OnContextCreated(CefRefPtr<ClientAppRenderer> app,
+    virtual void OnContextCreated(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context) 
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)frame;
 		(void)context;
 	}
 
-	virtual void OnContextReleased(CefRefPtr<ClientAppRenderer> app,
+    virtual void OnContextReleased(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context)
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)frame;
 		(void)context;
 	}
 
-	virtual void OnUncaughtException(CefRefPtr<ClientAppRenderer> app,
+    virtual void OnUncaughtException(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context,
 		CefRefPtr<CefV8Exception> exception,
 		CefRefPtr<CefV8StackTrace> stackTrace)
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)frame;
 		(void)context;
@@ -94,12 +83,11 @@ public:
 		(void)stackTrace;
 	}
 
-	virtual void OnFocusedNodeChanged(CefRefPtr<ClientAppRenderer> app,
+    virtual void OnFocusedNodeChanged(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefDOMNode> node)
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)frame;
 		(void)node;
@@ -109,13 +97,11 @@ public:
 	// handled and should not be passed on to other handlers. Delegates
 	// should check for unique message names to avoid interfering with each
 	// other.
-	virtual bool OnProcessMessageReceived(
-		CefRefPtr<ClientAppRenderer> app,
+    virtual bool OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message)
-	{
-		(void)app;
+    {
 		(void)browser;
 		(void)source_process;
 		(void)message;
@@ -129,53 +115,48 @@ class ClientAppRenderer
 	, public CefRenderProcessHandler
 {
 public:
-	using DelegateSet = std::set<CefRefPtr<IClientAppRendererDelegate>>;
-
 	ClientAppRenderer();
 
-private:
-	// Creates all of the Delegate objects. Implemented by cefclient in
-	// client_app_delegates_renderer.cc
-	static void CreateDelegates(DelegateSet& delegates);
+    void SetDelegate(IClientAppRendererDelegate *delegate);
 
+private:
 	// CefApp methods.
-	CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() OVERRIDE {
+    CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override {
 		return this;
 	}
 
 	// CefRenderProcessHandler methods.
-	void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) OVERRIDE;
-	void OnWebKitInitialized() OVERRIDE;
-	void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-	void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) OVERRIDE;
-	CefRefPtr<CefLoadHandler> GetLoadHandler() OVERRIDE;
+    void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) override;
+    void OnWebKitInitialized() override;
+    void OnBrowserCreated(CefRefPtr<CefBrowser> browser) override;
+    void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) override;
 	bool OnBeforeNavigation(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
 		NavigationType navigation_type,
-		bool is_redirect) OVERRIDE;
+        bool is_redirect) override;
 	void OnContextCreated(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefV8Context> context) OVERRIDE;
+        CefRefPtr<CefV8Context> context) override;
 	void OnContextReleased(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefV8Context> context) OVERRIDE;
+        CefRefPtr<CefV8Context> context) override;
 	void OnUncaughtException(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context,
 		CefRefPtr<CefV8Exception> exception,
-		CefRefPtr<CefV8StackTrace> stackTrace) OVERRIDE;
+        CefRefPtr<CefV8StackTrace> stackTrace) override;
 	void OnFocusedNodeChanged(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefDOMNode> node) OVERRIDE;
+        CefRefPtr<CefDOMNode> node) override;
 	bool OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
 		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message) OVERRIDE;
+        CefRefPtr<CefProcessMessage> message) override;
 
 private:
 	// Set of supported Delegates.
-	DelegateSet m_delegates;
+    IClientAppRendererDelegate *m_delegate = nullptr;
 
 	IMPLEMENT_REFCOUNTING(ClientAppRenderer);
 	DISALLOW_COPY_AND_ASSIGN(ClientAppRenderer);

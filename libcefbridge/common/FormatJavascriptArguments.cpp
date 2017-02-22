@@ -1,38 +1,38 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "FormatJavascriptArguments.h"
-#include "cpsutils/include/actionscript_utils.h"
-#include "cpsutils/include/string_utils.h"
-#include "includes/min_max_fix.hpp"
-#include "libcef_client/common/Errors.h"
-#include <json_spirit_writer_template.h>
-#include <json_spirit_writer_options.h>
+#include "Errors.h"
 #include <cctype>
+#include <codecvt>
 
 
-using cpsutils::actionscript_utils;
-using cpsutils::string_utils;
-using std::string;
-using std::wstring;
-using wValue = json_spirit::wValue;
-using Value = json_spirit::Value;
-
-
-namespace apputils
+namespace cefbridge
 {
 namespace detail
 {
 namespace
 {
-const unsigned JSON_FLAGS = unsigned(json_spirit::remove_trailing_zeros);
-
-string WriteJsonString(const wValue &value)
+// convert UTF-8 string to wstring
+std::wstring utf8_to_wstring(const std::string &str)
 {
-	return string_utils::wstring_to_utf8(json_spirit::write_string(value, JSON_FLAGS));
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+    return myconv.from_bytes(str);
 }
 
-string WriteJsonString(const Value &value)
+// convert wstring to UTF-8 string
+std::string wstring_to_utf8(const std::wstring &str)
 {
-	return json_spirit::write_string(value, JSON_FLAGS);
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+    return myconv.to_bytes(str);
+}
+
+std::string escape_string(const std::string &str)
+{
+    return nlohmann::json(str).dump();
+}
+
+std::string escape_wstring(const std::wstring &str)
+{
+    return escape_string(wstring_to_utf8(str));
 }
 }
 
@@ -56,9 +56,9 @@ void JsFormatter::Add(bool value)
 
 void JsFormatter::Add(double value)
 {
-	if (!isfinite(value))
+    if (!std::isfinite(value))
 	{
-		throw std::invalid_argument(cefclient::CEF_NONFINITE_NUMBER_ERROR);
+        throw std::invalid_argument(errors::CEF_NONFINITE_NUMBER_ERROR);
 	}
 
 	BeforeAddArgument();
@@ -68,65 +68,19 @@ void JsFormatter::Add(double value)
 void JsFormatter::Add(const std::wstring &value)
 {
 	BeforeAddArgument();
-	m_code += string_utils::quoted(string_utils::wstring_to_utf8(actionscript_utils::escape_action_script_string(value)));
+    m_code += escape_wstring(value);
+}
+
+void JsFormatter::Add(const nlohmann::json &value)
+{
+    BeforeAddArgument();
+    m_code += value.dump();
 }
 
 void JsFormatter::Add(const std::string &value)
 {
 	BeforeAddArgument();
-	m_code += string_utils::quoted(actionscript_utils::escape_action_script_string(value));
-}
-
-void JsFormatter::Add(const json_spirit::wArray &value)
-{
-	Add(wValue(value));
-}
-
-void JsFormatter::Add(const json_spirit::Array &value)
-{
-	Add(Value(value));
-}
-
-void JsFormatter::Add(const json_spirit::wObject &value)
-{
-	Add(wValue(value));
-}
-
-void JsFormatter::Add(const json_spirit::Object &value)
-{
-	Add(Value(value));
-}
-
-void JsFormatter::Add(const json_spirit::wValue &value)
-{
-	BeforeAddArgument();
-	m_code += WriteJsonString(value);
-}
-
-void JsFormatter::Add(const json_spirit::Value &value)
-{
-	BeforeAddArgument();
-	m_code += WriteJsonString(value);
-}
-
-// Adds `new Date(Date.UTC(year, month, day, hour, minute, second))`
-void JsFormatter::Add(ispringutils::datetime::CTimestamp timestamp)
-{
-	BeforeAddArgument();
-
-	const std::tm datetime = timestamp.GetTimeUTC();
-
-	std::stringstream out;
-	out << "new Date(Date.UTC("
-		<< datetime.tm_year << ","
-		<< datetime.tm_mon << ","
-		<< datetime.tm_mday << ","
-		<< datetime.tm_hour << ","
-		<< datetime.tm_min << ","
-		<< min(datetime.tm_sec, 59) // Does not allow 60th "leap" second.
-		<< "))"; 
-
-	m_code += out.str();
+    m_code += escape_string(value);
 }
 
 void JsFormatter::BeforeAddArgument()
