@@ -16,7 +16,7 @@ public:
 
     virtual ~IPromise() = default;
 
-	virtual IDispatcher &GetDispatcher() = 0;
+    virtual IDispatcher &GetDispatcher() = 0;
     virtual void Then(const ThenFunction &onFulfilled) = 0;
     virtual void Catch(const CatchFunction &onRejected) = 0;
     virtual void Cancel() = 0;

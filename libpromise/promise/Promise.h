@@ -25,10 +25,10 @@ public:
     {
     }
 
-	IDispatcher &GetDispatcher() override
-	{
-		return m_dispatcher;
-	}
+    IDispatcher &GetDispatcher() override
+    {
+        return m_dispatcher;
+    }
 
     void Then(const ThenFunction &onFulfilled) override
     {
@@ -133,6 +133,7 @@ protected:
 
 private:
     using lock_guard = std::lock_guard<std::mutex>;
+
     struct CanceledTag {};
     struct PendingState {};
 
@@ -156,6 +157,12 @@ private:
     {
         try
         {
+            if (m_callbackCalled)
+            {
+                return;
+            }
+            m_callbackCalled = true;
+
             auto sharedThis = this->shared_from_this();
             m_dispatcher.Post([sharedThis] {
                 auto &value = boost::get<ValueType>(sharedThis->m_storage);
@@ -173,6 +180,12 @@ private:
     {
         try
         {
+            if (m_callbackCalled)
+            {
+                return;
+            }
+            m_callbackCalled = true;
+
             auto sharedThis = this->shared_from_this();
             m_dispatcher.Post([sharedThis] {
                 auto &exception = boost::get<std::exception_ptr>(sharedThis->m_storage);
@@ -186,8 +199,9 @@ private:
         }
     }
 
-    IDispatcher &m_dispatcher;
+    bool m_callbackCalled = false;
     std::atomic_bool m_canceled;
+    IDispatcher &m_dispatcher;
     std::mutex m_mutex;
     StorageType m_storage;
     ThenFunction m_then;

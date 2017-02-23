@@ -23,6 +23,10 @@ public:
     /// Выполняет переданную операцию в основном потоке.
     void DoOnMainThread(const isprom::Operation &operation);
 
+    isprom::IDispatcher &GetMainThreadDispatcher();
+
+    isprom::IDispatcher &GetThreadPoolDispatcher();
+
     /// Входит в основной цикл и исполняет его, пока не будет вызван QuitMainLoop.
     void EnterMainLoop();
 
@@ -30,7 +34,7 @@ public:
     void QuitMainLoop();
 
 private:
-#if defined(_WIN32)
+#if defined(_WIN32) && 1
     isprom::Win32EventLoop m_eventLoop;
 #else
     isprom::AsioEventLoop m_eventLoop;

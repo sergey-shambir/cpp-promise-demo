@@ -11,6 +11,18 @@ void MainDispatcher::DoOnMainThread(const isprom::Operation &operation)
     m_eventLoop.Post(operation);
 }
 
+
+isprom::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
+{
+    return m_eventLoop;
+}
+
+
+isprom::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
+{
+    return m_pool;
+}
+
 void MainDispatcher::EnterMainLoop()
 {
     m_eventLoop.Run();
