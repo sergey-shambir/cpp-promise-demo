@@ -10,13 +10,17 @@
 class Demo
 {
 public:
+    static const int TASK_WEIGHT = 1; // always 1.
+
     Demo(MainDispatcher &dispatcher)
         : m_dispatcher(dispatcher)
     {
+        m_tasksCounter = 0;
     }
 
     void DemonstratePromise()
     {
+        OnTaskAdded();
         auto promise1 = m_dispatcher.DoOnBackground([this] {
             PrintSync("promise1 procedure");
             return 42;
@@ -36,28 +40,31 @@ public:
                 PrintSync("promise2 then with value: " + std::to_string(value));
                 promise1.Then([this](auto value) {
                     PrintSync("promise1 then with value: " + std::to_string(value));
-                    m_dispatcher.QuitMainLoop();
+                    OnTaskDone();
                 });
             });
         });
     }
 
+    void OnTaskAdded()
+    {
+        m_tasksCounter.fetch_add(TASK_WEIGHT);
+    }
+
+    void OnTaskDone()
+    {
+        const int taskRemained = m_tasksCounter.fetch_sub(TASK_WEIGHT);
+        if (taskRemained - TASK_WEIGHT == 0)
+        {
+            m_dispatcher.QuitMainLoop();
+        }
+    }
+
     void DemonstrateContinuation()
     {
-        const int TASK_COUNT = 3;
-        const int TASK_WEIGHT = 1;
-
-        auto sharedTaskCount = std::make_shared<std::atomic<int>>(TASK_COUNT);
-        auto onTaskDone = [this, sharedTaskCount, TASK_WEIGHT] {
-            const int taskRemained = sharedTaskCount->fetch_sub(TASK_WEIGHT);
-            if (taskRemained - TASK_WEIGHT == 0)
-            {
-                m_dispatcher.QuitMainLoop();
-            }
-        };
-
         // Продолжение на фоновом потоке
         {
+            OnTaskAdded();
             auto numPromise = m_dispatcher.DoOnBackground([this] {
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
                 return 14;
@@ -66,15 +73,16 @@ public:
                 PrintSync("converting int to string #1: " + std::to_string(value));
                 return std::to_string(value);
             });
-            stringPromise.Then([this, onTaskDone](auto value) {
+            stringPromise.Then([this](auto value) {
                 assert(!value.empty());
                 PrintSync("stringPromise #1 then with value: " + value);
-                onTaskDone();
+                OnTaskDone();
             });
         }
 
         // Продолжение на основном потоке
         {
+            OnTaskAdded();
             auto numPromise = m_dispatcher.DoOnBackground([this] {
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
                 return 25;
@@ -83,15 +91,16 @@ public:
                 PrintSync("converting int to string #2: " + std::to_string(value));
                 return std::to_string(value);
             });
-            stringPromise.Then([this, onTaskDone](auto value) {
+            stringPromise.Then([this](auto value) {
                 assert(!value.empty());
                 PrintSync("stringPromise #2 then with value: " + value);
-                onTaskDone();
+                OnTaskDone();
             });
         }
 
         // Продолжение с обработкой исключения
         {
+            OnTaskAdded();
             auto throwPromise = m_dispatcher.DoOnBackground([this] {
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
                 throw std::runtime_error("throw promise throws exception");
@@ -111,10 +120,10 @@ public:
                 }
                 return std::string("we got exception!");
             });
-            stringPromise.Then([this, onTaskDone](auto value) {
+            stringPromise.Then([this](auto value) {
                 assert(!value.empty());
                 PrintSync("stringPromise #2 then with value: " + value);
-                onTaskDone();
+                OnTaskDone();
             });
         }
     }
@@ -129,6 +138,7 @@ private:
     }
 
     MainDispatcher &m_dispatcher;
+    std::atomic<int> m_tasksCounter;
 };
 
 
@@ -138,9 +148,8 @@ int main()
 
     Demo demo(dispatcher);
     dispatcher.DoOnMainThread([&] {
-        //demo.DemonstratePromise();
-        for (int i = 0; i < 10; ++i)
-            demo.DemonstrateContinuation();
+        demo.DemonstratePromise();
+        demo.DemonstrateContinuation();
     });
 
     dispatcher.EnterMainLoop();
