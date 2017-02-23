@@ -60,8 +60,9 @@ private:
         // Reading count before execution protects us
         //  from "add-execute-add-execute-..." infinitive loop.
         unsigned operationsCount = ReadOperationsCount();
-        while (operationsCount--)
+        while (operationsCount > 0)
         {
+            --operationsCount;
             Operation operation = PopOperation();
             try
             {
@@ -85,8 +86,9 @@ private:
     {
         mutex_lock lock(m_tasksMutex);
         assert(!m_tasks.empty());
-        Operation operation = m_tasks.back();
+        Operation operation = m_tasks.front();
         m_tasks.pop();
+
         return operation;
     }
 
