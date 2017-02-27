@@ -1,6 +1,3 @@
-// libpromisewin32.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
 #include "MainDispatcher.h"
 #include <iostream>
@@ -62,7 +59,7 @@ public:
 
     void DemonstrateContinuation()
     {
-        // Продолжение на фоновом потоке
+        // РџСЂРѕРґРѕР»Р¶РµРЅРёРµ РЅР° С„РѕРЅРѕРІРѕРј РїРѕС‚РѕРєРµ
         {
             OnTaskAdded();
             auto numPromise = m_dispatcher.DoOnBackground([this] {
@@ -80,7 +77,7 @@ public:
             });
         }
 
-        // Продолжение на основном потоке
+        // РџСЂРѕРґРѕР»Р¶РµРЅРёРµ РЅР° РѕСЃРЅРѕРІРЅРѕРј РїРѕС‚РѕРєРµ
         {
             OnTaskAdded();
             auto numPromise = m_dispatcher.DoOnBackground([this] {
@@ -98,7 +95,7 @@ public:
             });
         }
 
-        // Продолжение с обработкой исключения
+        // РџСЂРѕРґРѕР»Р¶РµРЅРёРµ СЃ РѕР±СЂР°Р±РѕС‚РєРѕР№ РёСЃРєР»СЋС‡РµРЅРёСЏ
         {
             OnTaskAdded();
             auto throwPromise = m_dispatcher.DoOnBackground([this] {
@@ -156,4 +153,3 @@ int main()
 
     return 0;
 }
-

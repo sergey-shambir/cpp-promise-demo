@@ -43,9 +43,9 @@ public:
         m_promise->Cancel();
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции
-    // с указанным исполнителем для вызова и обратного вызова,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё
+    // СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёСЃРїРѕР»РЅРёС‚РµР»РµРј РґР»СЏ РІС‹Р·РѕРІР° Рё РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function, class Function2>
     decltype(auto) ThenDo(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher, Function &&onFulfilled, Function2 &&onRejected)
     {
@@ -55,10 +55,10 @@ public:
 
         static_assert(std::is_same_v<ResultType, ResultType2>, "Then and Catch continuation functions should return the same type");
 
-        // Если диспетчер тот же самый, выполняем продолжение безотлагательно.
+        // Р•СЃР»Рё РґРёСЃРїРµС‚С‡РµСЂ С‚РѕС‚ Р¶Рµ СЃР°РјС‹Р№, РІС‹РїРѕР»РЅСЏРµРј РїСЂРѕРґРѕР»Р¶РµРЅРёРµ Р±РµР·РѕС‚Р»Р°РіР°С‚РµР»СЊРЅРѕ.
         const bool immediateMode = (std::addressof(m_promise->GetDispatcher()) == std::addressof(callDispatcher));
 
-        // Запускает новую операцию с продолжением внутри на выполнение.
+        // Р—Р°РїСѓСЃРєР°РµС‚ РЅРѕРІСѓСЋ РѕРїРµСЂР°С†РёСЋ СЃ РїСЂРѕРґРѕР»Р¶РµРЅРёРµРј РІРЅСѓС‚СЂРё РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ.
         auto submit = [immediateMode, &callDispatcher](Operation && operation) {
             if (immediateMode)
             {
@@ -102,9 +102,9 @@ public:
         return IPromisePtr<ResultType>(promise);
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции
-    // с указанным исполнителем для вызова и обратного вызова,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё
+    // СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёСЃРїРѕР»РЅРёС‚РµР»РµРј РґР»СЏ РІС‹Р·РѕРІР° Рё РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function>
     decltype(auto) ThenDo(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher, Function &&onFulfilled)
     {
@@ -116,34 +116,34 @@ public:
         return ThenDo(callDispatcher, callbackDispatcher, onFulfilled, rethrowFn);
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции
-    // с указанным исполнителем для вызова,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё
+    // СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёСЃРїРѕР»РЅРёС‚РµР»РµРј РґР»СЏ РІС‹Р·РѕРІР°,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function, class Function2>
     decltype(auto) ThenDo(IDispatcher &callDispatcher, Function && onFulfilled, Function2 &&onRejected)
     {
         return ThenDo(callDispatcher, m_promise->GetDispatcher(), std::forward<Function>(onFulfilled), std::forward<Function2>(onRejected));
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции
-    // с указанным исполнителем для вызова,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё
+    // СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РёСЃРїРѕР»РЅРёС‚РµР»РµРј РґР»СЏ РІС‹Р·РѕРІР°,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function>
     decltype(auto) ThenDo(IDispatcher &callDispatcher, Function && onFulfilled)
     {
         return ThenDo(callDispatcher, m_promise->GetDispatcher(), std::forward<Function>(onFulfilled));
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function, class Function2>
     decltype(auto) ThenDo(Function && onFulfilled, Function2 &&onRejected)
     {
         return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(onFulfilled), std::forward<Function2>(onRejected));
     }
 
-    // Создаёт продолжение (continuation) асинхронной операции,
-    //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
+    // РЎРѕР·РґР°С‘С‚ РїСЂРѕРґРѕР»Р¶РµРЅРёРµ (continuation) Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕРїРµСЂР°С†РёРё,
+    //  РїРµСЂРµРґР°С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРµРґС‹РґСѓС‰РµР№ РїРѕРґР·Р°РґР°С‡Рё РІ РЅРѕРІСѓСЋ С„СѓРЅРєС†РёСЋ РєР°Рє РїР°СЂР°РјРµС‚СЂ.
     template<class Function>
     decltype(auto) ThenDo(Function && onFulfilled)
     {

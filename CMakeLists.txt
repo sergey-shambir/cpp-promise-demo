@@ -10,6 +10,7 @@ include(cmake/use-msvc-static-runtime.cmake)
 
 # --- Свойства для сборки демонстрационных приложений ---
 add_subdirectory(libpromise)
-add_subdirectory(console-app)
+add_subdirectory(promise-app)
+add_subdirectory(boost-future-pain)
 
 

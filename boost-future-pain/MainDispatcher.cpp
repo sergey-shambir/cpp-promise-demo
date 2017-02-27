@@ -2,7 +2,7 @@
 #include "MainDispatcher.h"
 
 MainDispatcher::MainDispatcher()
-    : m_backgroundPromiseFactory(m_pool, m_eventLoop)
+    : m_backgroundFutureFactory(m_pool, m_eventLoop)
 {
 }
 
@@ -11,12 +11,10 @@ void MainDispatcher::DoOnMainThread(const isprom::Operation &operation)
     m_eventLoop.Post(operation);
 }
 
-
 isprom::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
 {
     return m_eventLoop;
 }
-
 
 isprom::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
 {

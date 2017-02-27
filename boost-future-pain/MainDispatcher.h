@@ -3,7 +3,6 @@
 #include "platform/AsioThreadPool.h"
 #include "platform/AsioEventLoop.h"
 #include "platform/Win32EventLoop.h"
-#include "promise/PromiseFactory.h"
 #include "FutureFactory.h"
 
 class MainDispatcher
@@ -17,7 +16,7 @@ public:
     template <class Function>
     decltype(auto) DoOnBackground(Function && function)
     {
-        return m_backgroundPromiseFactory.MakePromise(std::forward<Function>(function));
+        return m_backgroundFutureFactory.MakePromise(std::forward<Function>(function));
     }
 
     /// Выполняет переданную операцию в основном потоке.
@@ -34,15 +33,7 @@ public:
     void QuitMainLoop();
 
 private:
-#if defined(_WIN32) && 1
-    isprom::Win32EventLoop m_eventLoop;
-#else
     isprom::AsioEventLoop m_eventLoop;
-#endif
     isprom::AsioThreadPool m_pool;
-#if OPTION_USE_FUTURE_FACTORY
-    isprom::FutureFactory m_backgroundPromiseFactory;
-#else
-    isprom::PromiseFactory m_backgroundPromiseFactory;
-#endif
+    isprom::FutureFactory m_backgroundFutureFactory;
 };
