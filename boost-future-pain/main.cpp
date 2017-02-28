@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MainDispatcher.h"
+#include "pain-level.h"
 #include <iostream>
 #include <thread>
 
@@ -23,16 +24,17 @@ public:
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
         m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
-            std::this_thread::sleep(std::chrono::milliseconds(300));
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
         });
-        auto future = promise.get_future();
+        auto future = promise->get_future();
 
         PrintSync("called then method");
-        future.then([&](future<string> oldFuture) {
+        future.then([&](boost::future<int> oldFuture) {
+            (void)oldFuture;
             PrintSync("called then callback");
-            dispatch.QuitMainLoop();
+            m_dispatcher.QuitMainLoop();
         });
     }
 
@@ -41,16 +43,17 @@ public:
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
         m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
-            std::this_thread::sleep(std::chrono::milliseconds(300));
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
         });
-        auto future = promise.get_future();
+        auto future = promise->get_future();
 
         PrintSync("called then method");
-        future.then(launch::deferred, [&](future<string> oldFuture) {
+        future.then(boost::launch::deferred, [&](boost::future<int> oldFuture) {
+            (void)oldFuture;
             PrintSync("called then callback");
-            dispatch.QuitMainLoop();
+            m_dispatcher.QuitMainLoop();
         });
     }
 
@@ -59,29 +62,31 @@ public:
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
         m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
-            std::this_thread::sleep(std::chrono::milliseconds(300));
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
         });
-        auto future = promise.get_future();
+        auto future = promise->get_future();
 
         PrintSync("called then method");
-        future.then(launch::executor, [&](future<string> oldFuture) {
+        future.then(boost::launch::executor, [&](boost::future<int> oldFuture) {
+            (void)oldFuture;
             PrintSync("called then callback");
-            dispatch.QuitMainLoop();
+            m_dispatcher.QuitMainLoop();
         });
     }
 
     void WannaWaitForever()
     {
-        m_dispatcher.DoOnBackground([] {
+        auto future = m_dispatcher.DoOnBackground([] {
             return 42;
         });
 
         PrintSync("called then method");
-        auto f2 = future.then(launch::executor, [&](future<string> oldFuture) {
+        auto f2 = future.then(boost::launch::executor, [&](boost::future<int> oldFuture) {
+            (void)oldFuture;
             PrintSync("called then callback");
-            dispatch.QuitMainLoop();
+            m_dispatcher.QuitMainLoop();
         });
         // Вызов wait приводит к тому, что выполнение колбека, добавленного
         //  через then, не происходит никогда.
@@ -90,16 +95,16 @@ public:
         f2.wait();
     }
 
-    void NoPainNoGame()
+    void ExecuteNormally()
     {
-        m_dispatcher.DoOnBackground([] {
+        auto future = m_dispatcher.DoOnBackground([] {
             return 42;
         });
 
         PrintSync("called then method");
-        auto f2 = future.then(launch::executor, [&](future<string> oldFuture) {
+        auto f2 = future.then(boost::launch::executor, [&](boost::future<int> oldFuture) {
             PrintSync("called then callback");
-            dispatch.QuitMainLoop();
+            m_dispatcher.QuitMainLoop();
         });
 
         // Теперь мы не вызываем wait. Но его легко вызовет какой-нибудь
@@ -112,7 +117,7 @@ private:
         static std::mutex printMutex;
         std::lock_guard<std::mutex> lock(printMutex);
         const auto id = std::this_thread::get_id();
-        std::cerr << message << "' on thread " << id << std::endl;
+        std::cerr << message << " on thread " << id << std::endl;
     }
 
     MainDispatcher &m_dispatcher;
@@ -142,7 +147,7 @@ int main()
                 demo.WannaWaitForever();
                 break;
             default:
-                demo.NoPainNoGame();
+                demo.ExecuteNormally();
                 break;
         }
     });

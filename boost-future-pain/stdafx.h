@@ -1,7 +1,5 @@
 #pragma once
 
-#include "pain-level.h"
-
 #if defined(_WIN32)
 #include <SDKDDKVer.h>
 #endif

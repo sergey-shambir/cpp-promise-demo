@@ -5,25 +5,17 @@
 #include <memory>
 #include <atomic>
 
-#if OPTION_PAIN_LEVEL == 0 || OPTION_PAIN_LEVEL == 4
-
-namespace isprom
-{
-
-template <class T>
-using Future = boost::future<T>;
-
 class FutureFactory
     : public boost::enable_shared_from_this<FutureFactory>
     , public boost::executor
 {
 public:
-    FutureFactory(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher);
+    FutureFactory(isprom::IDispatcher &callDispatcher, isprom::IDispatcher &callbackDispatcher);
 
     template <class Function>
     decltype(auto) MakePromise(Function && function)
     {
-        using ResultType = decltype(Function());
+        using ResultType = std::result_of_t<Function()>;
         using PromiseType = boost::promise<ResultType>;
         using FutureType = boost::future<ResultType>;
 
@@ -51,10 +43,6 @@ private:
     bool try_executing_one();
 
     std::atomic_bool m_closed;
-    IDispatcher &m_callDispatcher;
-    IDispatcher &m_callbackDispatcher;
+    isprom::IDispatcher &m_callDispatcher;
+    isprom::IDispatcher &m_callbackDispatcher;
 };
-
-}
-
-#endif

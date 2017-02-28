@@ -2,7 +2,7 @@
 #include "MainDispatcher.h"
 
 MainDispatcher::MainDispatcher()
-    : m_backgroundFutureFactory(m_pool, m_eventLoop)
+    : m_backgroundFutureFactory(boost::make_shared<FutureFactory>(m_pool, m_eventLoop))
 {
 }
 

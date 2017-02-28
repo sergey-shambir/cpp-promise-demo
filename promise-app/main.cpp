@@ -131,7 +131,7 @@ private:
         static std::mutex printMutex;
         std::lock_guard<std::mutex> lock(printMutex);
         const auto id = std::this_thread::get_id();
-        std::cerr << message << "' on thread " << id << std::endl;
+        std::cerr << message << " on thread " << id << std::endl;
     }
 
     MainDispatcher &m_dispatcher;

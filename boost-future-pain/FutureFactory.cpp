@@ -1,12 +1,7 @@
 #include "stdafx.h"
 #include "FutureFactory.h"
 
-#if OPTION_PAIN_LEVEL == 0 || OPTION_PAIN_LEVEL == 4
-
-namespace isprom
-{
-
-FutureFactory::FutureFactory(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher)
+FutureFactory::FutureFactory(isprom::IDispatcher &callDispatcher, isprom::IDispatcher &callbackDispatcher)
     : m_callDispatcher(callDispatcher)
     , m_callbackDispatcher(callbackDispatcher)
 {
@@ -32,7 +27,3 @@ bool FutureFactory::try_executing_one()
 {
     return false;
 }
-
-}
-
-#endif

@@ -4,8 +4,9 @@
 #include "platform/AsioEventLoop.h"
 #include "platform/Win32EventLoop.h"
 #include "FutureFactory.h"
+#include <boost/noncopyable.hpp>
 
-class MainDispatcher
+class MainDispatcher : public boost::noncopyable
 {
 public:
     MainDispatcher();
@@ -16,7 +17,7 @@ public:
     template <class Function>
     decltype(auto) DoOnBackground(Function && function)
     {
-        return m_backgroundFutureFactory.MakePromise(std::forward<Function>(function));
+        return m_backgroundFutureFactory->MakePromise(std::forward<Function>(function));
     }
 
     /// Выполняет переданную операцию в основном потоке.
@@ -35,5 +36,5 @@ public:
 private:
     isprom::AsioEventLoop m_eventLoop;
     isprom::AsioThreadPool m_pool;
-    isprom::FutureFactory m_backgroundFutureFactory;
+    boost::shared_ptr<FutureFactory> m_backgroundFutureFactory;
 };
