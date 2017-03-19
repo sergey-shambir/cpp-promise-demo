@@ -3,7 +3,6 @@
 #include <iostream>
 #include <thread>
 
-
 class Demo
 {
 public:
@@ -105,8 +104,7 @@ public:
             });
             auto stringPromise = throwPromise.ThenDo(m_dispatcher.GetMainThreadDispatcher(), [this](int value) {
                 PrintSync("ERROR - should never convert int to string #3: " + std::to_string(value));
-                return std::to_string(value);
-            }, [this](const std::exception_ptr &exception) {
+                return std::to_string(value); }, [this](const std::exception_ptr &exception) {
                 try
                 {
                     std::rethrow_exception(exception);
@@ -115,8 +113,7 @@ public:
                 {
                     PrintSync(std::string("got exception: ") + ex.what());
                 }
-                return std::string("we got exception!");
-            });
+                return std::string("we got exception!"); });
             stringPromise.Then([this](auto value) {
                 assert(!value.empty());
                 PrintSync("stringPromise #2 then with value: " + value);
@@ -137,7 +134,6 @@ private:
     MainDispatcher &m_dispatcher;
     std::atomic<int> m_tasksCounter;
 };
-
 
 int main()
 {

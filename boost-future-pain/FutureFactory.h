@@ -1,9 +1,9 @@
 #pragma once
 #include "pain-level.h"
 #include "platform/IDispatcher.h"
+#include <atomic>
 #include <boost/thread/future.hpp>
 #include <memory>
-#include <atomic>
 
 class FutureFactory
     : public boost::enable_shared_from_this<FutureFactory>
@@ -12,8 +12,8 @@ class FutureFactory
 public:
     FutureFactory(isprom::IDispatcher &callDispatcher, isprom::IDispatcher &callbackDispatcher);
 
-    template <class Function>
-    decltype(auto) MakePromise(Function && function)
+    template<class Function>
+    decltype(auto) MakePromise(Function &&function)
     {
         using ResultType = std::result_of_t<Function()>;
         using PromiseType = boost::promise<ResultType>;
@@ -39,7 +39,7 @@ public:
 private:
     void close() final;
     bool closed() final;
-    void submit(work && closure);
+    void submit(work &&closure);
     bool try_executing_one();
 
     std::atomic_bool m_closed;

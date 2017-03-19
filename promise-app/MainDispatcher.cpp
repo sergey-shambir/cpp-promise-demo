@@ -16,7 +16,6 @@ isprom::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
     return m_eventLoop;
 }
 
-
 isprom::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
 {
     return m_pool;

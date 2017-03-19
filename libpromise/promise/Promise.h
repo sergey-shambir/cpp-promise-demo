@@ -1,19 +1,19 @@
 #pragma once
-#include "IPromise.h"
 #include "../platform/IDispatcher.h"
-#include <atomic>
-#include <mutex>
-#include <boost/variant.hpp>
-#include <boost/noncopyable.hpp>
+#include "IPromise.h"
 #include "promise_detail.h"
+#include <atomic>
+#include <boost/noncopyable.hpp>
+#include <boost/variant.hpp>
+#include <mutex>
 
 namespace isprom
 {
-template <class ValueType>
+template<class ValueType>
 class Promise
-        : public IPromise<ValueType>
-        , public std::enable_shared_from_this<Promise<ValueType>>
-        , private boost::noncopyable
+    : public IPromise<ValueType>
+    , public std::enable_shared_from_this<Promise<ValueType>>
+    , private boost::noncopyable
 {
 public:
     using ThenFunction = typename IPromise<ValueType>::ThenFunction;
@@ -97,7 +97,7 @@ public:
         return m_canceled;
     }
 
-    void Resolve(ValueType && value)
+    void Resolve(ValueType &&value)
     {
         CheckMovable<ValueType>();
         lock_guard lock(m_mutex);
@@ -112,7 +112,7 @@ public:
         }
     }
 
-    void Reject(std::exception_ptr && exception)
+    void Reject(std::exception_ptr &&exception)
     {
         CheckMovable<std::exception_ptr>();
         lock_guard lock(m_mutex);
@@ -134,23 +134,26 @@ protected:
 private:
     using lock_guard = std::lock_guard<std::mutex>;
 
-    struct CanceledTag {};
-    struct PendingState {};
+    struct CanceledTag
+    {
+    };
+    struct PendingState
+    {
+    };
 
     using StorageType = boost::variant<
         PendingState,
         CanceledTag,
         ValueType,
-        std::exception_ptr
-    >;
+        std::exception_ptr>;
 
     template<class T>
     inline void CheckMovable()
     {
         static_assert(std::is_nothrow_move_constructible<T>::value,
-                      "type should be nonthrow move constructible");
+            "type should be nonthrow move constructible");
         static_assert(std::is_nothrow_move_assignable<T>::value,
-                      "type should be nonthrow move assignable");
+            "type should be nonthrow move assignable");
     }
 
     void InvokeThen()

@@ -6,7 +6,7 @@
 
 namespace isprom
 {
-template <class Value>
+template<class Value>
 class IPromisePtr
 {
 public:
@@ -22,23 +22,23 @@ public:
     {
     }
 
-    void Then(const ThenFunction &onFulfilled)const
+    void Then(const ThenFunction &onFulfilled) const
     {
         m_promise->Then(onFulfilled);
     }
 
-    void Then(const ThenFunction &onFulfilled, const CatchFunction &onRejected)const
+    void Then(const ThenFunction &onFulfilled, const CatchFunction &onRejected) const
     {
         m_promise->Then(onFulfilled);
         m_promise->Catch(onFulfilled);
     }
 
-    void Catch(const CatchFunction &onRejected)const
+    void Catch(const CatchFunction &onRejected) const
     {
         m_promise->Catch(onRejected);
     }
 
-    void Cancel()const
+    void Cancel() const
     {
         m_promise->Cancel();
     }
@@ -59,7 +59,7 @@ public:
         const bool immediateMode = (std::addressof(m_promise->GetDispatcher()) == std::addressof(callDispatcher));
 
         // Запускает новую операцию с продолжением внутри на выполнение.
-        auto submit = [immediateMode, &callDispatcher](Operation && operation) {
+        auto submit = [immediateMode, &callDispatcher](Operation &&operation) {
             if (immediateMode)
             {
                 operation();
@@ -120,7 +120,7 @@ public:
     // с указанным исполнителем для вызова,
     //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
     template<class Function, class Function2>
-    decltype(auto) ThenDo(IDispatcher &callDispatcher, Function && onFulfilled, Function2 &&onRejected)
+    decltype(auto) ThenDo(IDispatcher &callDispatcher, Function &&onFulfilled, Function2 &&onRejected)
     {
         return ThenDo(callDispatcher, m_promise->GetDispatcher(), std::forward<Function>(onFulfilled), std::forward<Function2>(onRejected));
     }
@@ -129,7 +129,7 @@ public:
     // с указанным исполнителем для вызова,
     //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
     template<class Function>
-    decltype(auto) ThenDo(IDispatcher &callDispatcher, Function && onFulfilled)
+    decltype(auto) ThenDo(IDispatcher &callDispatcher, Function &&onFulfilled)
     {
         return ThenDo(callDispatcher, m_promise->GetDispatcher(), std::forward<Function>(onFulfilled));
     }
@@ -137,7 +137,7 @@ public:
     // Создаёт продолжение (continuation) асинхронной операции,
     //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
     template<class Function, class Function2>
-    decltype(auto) ThenDo(Function && onFulfilled, Function2 &&onRejected)
+    decltype(auto) ThenDo(Function &&onFulfilled, Function2 &&onRejected)
     {
         return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(onFulfilled), std::forward<Function2>(onRejected));
     }
@@ -145,7 +145,7 @@ public:
     // Создаёт продолжение (continuation) асинхронной операции,
     //  передаёт результат предыдущей подзадачи в новую функцию как параметр.
     template<class Function>
-    decltype(auto) ThenDo(Function && onFulfilled)
+    decltype(auto) ThenDo(Function &&onFulfilled)
     {
         return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(onFulfilled));
     }

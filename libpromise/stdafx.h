@@ -11,8 +11,8 @@
 
 #include <cstdlib>
 
-#include <vector>
+#include <atomic>
 #include <chrono>
 #include <memory>
-#include <atomic>
 #include <mutex>
+#include <vector>

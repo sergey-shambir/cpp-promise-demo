@@ -18,7 +18,7 @@ bool FutureFactory::closed()
     return m_closed;
 }
 
-void FutureFactory::submit(work && closure)
+void FutureFactory::submit(work &&closure)
 {
     m_callbackDispatcher.Post(std::move(closure));
 }

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <thread>
 
-
 class Demo
 {
 public:
@@ -124,7 +123,6 @@ private:
     std::atomic<int> m_tasksCounter;
 };
 
-
 int main()
 {
     MainDispatcher dispatcher;
@@ -134,21 +132,21 @@ int main()
         const int level = OPTION_PAIN_LEVEL;
         switch (level)
         {
-            case 1:
-                demo.WannaCallbackOnNewThread();
-                break;
-            case 2:
-                demo.WannaNeverCallThenCallback();
-                break;
-            case 3:
-                demo.WannaUseEmptyExecutor();
-                break;
-            case 4:
-                demo.WannaWaitForever();
-                break;
-            default:
-                demo.ExecuteNormally();
-                break;
+        case 1:
+            demo.WannaCallbackOnNewThread();
+            break;
+        case 2:
+            demo.WannaNeverCallThenCallback();
+            break;
+        case 3:
+            demo.WannaUseEmptyExecutor();
+            break;
+        case 4:
+            demo.WannaWaitForever();
+            break;
+        default:
+            demo.ExecuteNormally();
+            break;
         }
     });
 

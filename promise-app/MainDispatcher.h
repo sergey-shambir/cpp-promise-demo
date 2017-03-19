@@ -1,7 +1,7 @@
 #pragma once
 #include "Types.h"
-#include "platform/AsioThreadPool.h"
 #include "platform/AsioEventLoop.h"
+#include "platform/AsioThreadPool.h"
 #include "platform/Win32EventLoop.h"
 #include "promise/PromiseFactory.h"
 
@@ -13,8 +13,8 @@ public:
     /// Выполняет переданную функцию в фоновом потоке.
     /// Возвращает Promise<T>, где T - тип, возвращаемый переданной функцией.
     /// Колбек у Promise выполняется в основном потоке.
-    template <class Function>
-    decltype(auto) DoOnBackground(Function && function)
+    template<class Function>
+    decltype(auto) DoOnBackground(Function &&function)
     {
         return m_backgroundPromiseFactory.MakePromise(std::forward<Function>(function));
     }

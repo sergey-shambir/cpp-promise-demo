@@ -1,8 +1,7 @@
 #pragma once
 #include "IDispatcher.h"
-#include <memory>
 #include <boost/noncopyable.hpp>
-
+#include <memory>
 
 #if defined(_WIN32)
 
@@ -18,8 +17,8 @@ public:
 
     void Post(const Operation &operation) override;
 
-    // TODO: timer-based scheduler can be useful,
-    //  but is out of scope for my project right now.
+// TODO: timer-based scheduler can be useful,
+//  but is out of scope for my project right now.
 #if 0
     class ITimer;
     using ITimerPtr = std::unique_ptr<ITimer>;

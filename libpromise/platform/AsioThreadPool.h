@@ -1,8 +1,8 @@
 #pragma once
 
 #include "IDispatcher.h"
-#include <boost/noncopyable.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/noncopyable.hpp>
 #include <thread>
 #include <vector>
 

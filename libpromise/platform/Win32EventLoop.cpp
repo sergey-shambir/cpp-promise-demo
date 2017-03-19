@@ -58,6 +58,5 @@ void Win32EventLoop::Post(const Operation &operation)
 {
     m_impl->Post(operation);
 }
-
 }
 #endif

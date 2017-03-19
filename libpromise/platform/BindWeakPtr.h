@@ -1,6 +1,6 @@
-#include <memory>
 #include <functional>
 #include <iostream>
+#include <memory>
 
 /// Function `BindWeakPtr` - safe `std::bind` replacement for `std::weak_ptr`
 ///  Implements "weak this" idiom: callback called only if owner object still exists, otherwise nothing happens.
@@ -13,11 +13,11 @@
 
 namespace detail
 {
-template <class ReturnType, class ClassType, bool AddConst, class... Args>
+template<class ReturnType, class ClassType, bool AddConst, class... Args>
 struct WeakInvoker
 {
-    using ConstMethodType = ReturnType(ClassType::*)(Args ...args)const;
-    using NonConstMethodType = ReturnType(ClassType::*)(Args ...args);
+    using ConstMethodType = ReturnType (ClassType::*)(Args... args) const;
+    using NonConstMethodType = ReturnType (ClassType::*)(Args... args);
     using MethodType = std::conditional_t<AddConst, ConstMethodType, NonConstMethodType>;
     using WeakPtrType = std::weak_ptr<ClassType>;
 
@@ -27,7 +27,7 @@ struct WeakInvoker
     {
     }
 
-    ReturnType operator()(Args ...args)const
+    ReturnType operator()(Args... args) const
     {
         if (auto pThis = m_pObject.lock())
         {
@@ -42,8 +42,8 @@ struct WeakInvoker
 }
 
 /// Weak this binding of non-const methods.
-template <typename ReturnType, typename ClassType, typename... Params, typename... Args>
-decltype(auto) BindWeakPtr(ReturnType(ClassType::*memberFn)(Params ...args), std::shared_ptr<ClassType> const &pThis, Args ...args)
+template<typename ReturnType, typename ClassType, typename... Params, typename... Args>
+decltype(auto) BindWeakPtr(ReturnType (ClassType::*memberFn)(Params... args), std::shared_ptr<ClassType> const &pThis, Args... args)
 {
     using Invoker = detail::WeakInvoker<ReturnType, ClassType, false, Params...>;
 
@@ -52,8 +52,8 @@ decltype(auto) BindWeakPtr(ReturnType(ClassType::*memberFn)(Params ...args), std
 }
 
 /// Weak this binding of const methods.
-template <typename ReturnType, typename ClassType, typename... Params, typename... Args>
-decltype(auto) BindWeakPtr(ReturnType(ClassType::*memberFn)(Params ...args)const, std::shared_ptr<ClassType> const &pThis, Args ...args)
+template<typename ReturnType, typename ClassType, typename... Params, typename... Args>
+decltype(auto) BindWeakPtr(ReturnType (ClassType::*memberFn)(Params... args) const, std::shared_ptr<ClassType> const &pThis, Args... args)
 {
     using Invoker = detail::WeakInvoker<ReturnType, ClassType, true, Params...>;
 

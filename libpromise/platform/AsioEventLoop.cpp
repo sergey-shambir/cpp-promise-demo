@@ -38,5 +38,4 @@ void AsioEventLoop::DeferQuit()
         m_io.stop();
     });
 }
-
 }

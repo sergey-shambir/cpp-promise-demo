@@ -7,12 +7,12 @@ namespace isprom
 {
 class IDispatcher;
 
-template <class ValueType>
+template<class ValueType>
 class IPromise
 {
 public:
     using ThenFunction = std::function<void(ValueType)>;
-    using CatchFunction = std::function<void(std::exception_ptr const&)>;
+    using CatchFunction = std::function<void(std::exception_ptr const &)>;
 
     virtual ~IPromise() = default;
 

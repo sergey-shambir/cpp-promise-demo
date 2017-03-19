@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Win32NonBlockingDispatcher.h"
-#include <queue>
-#include <mutex>
 #include <boost/optional.hpp>
+#include <mutex>
+#include <queue>
 
 #if defined(_WIN32)
 
@@ -47,9 +47,9 @@ struct Win32NonBlockingDispatcher::Impl
     BEGIN_MSG_MAP(Impl)
         MESSAGE_HANDLER(WM_DO_WORK, OnDoWork)
     END_MSG_MAP()
-    
+
 private:
-    LRESULT OnDoWork(UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+    LRESULT OnDoWork(UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/)
     {
         DoWorkImpl();
         return 0;
@@ -109,7 +109,6 @@ void Win32NonBlockingDispatcher::Post(const Operation &operation)
 {
     m_impl->Post(operation);
 }
-
 }
 
 #endif

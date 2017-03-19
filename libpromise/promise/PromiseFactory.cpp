@@ -9,5 +9,4 @@ PromiseFactory::PromiseFactory(isprom::IDispatcher &callDispatcher, isprom::IDis
     , m_callbackDispatcher(callbackDispatcher)
 {
 }
-
 }

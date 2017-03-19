@@ -1,13 +1,13 @@
 #pragma once
 #include "IEventLoop.h"
-#include <boost/noncopyable.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace isprom
 {
 class AsioEventLoop
-        : public IEventLoop
-        , private boost::noncopyable
+    : public IEventLoop
+    , private boost::noncopyable
 {
 public:
     AsioEventLoop();

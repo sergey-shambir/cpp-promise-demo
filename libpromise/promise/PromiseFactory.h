@@ -1,9 +1,9 @@
 #pragma once
-#include "Promise.h"
 #include "IPromisePtr.h"
+#include "Promise.h"
 #include "promise_detail.h"
-#include <type_traits>
 #include <boost/optional.hpp>
+#include <type_traits>
 
 namespace isprom
 {
@@ -19,8 +19,8 @@ public:
     /// Возврат либо исключение функции используется для заполнения Promise.
     /// Вызов callback'ов Promise выполняется в потоке callback'ов.
     /// Возвращает Promise от операции, запущенной через диспетчер задач фабрики.
-    template <class Function>
-    decltype(auto) MakePromise(Function && fn)
+    template<class Function>
+    decltype(auto) MakePromise(Function &&fn)
     {
         using ValueType = std::result_of_t<Function()>;
         using ResultType = boost::variant<std::exception_ptr, ValueType>;
