@@ -3,7 +3,7 @@
 #include "platform/AsioEventLoop.h"
 #include "platform/AsioThreadPool.h"
 #include "platform/Win32EventLoop.h"
-#include "promise/PromiseFactory.h"
+#include "promise/AsyncCallFactory.h"
 
 class MainDispatcher
 {
@@ -16,15 +16,15 @@ public:
     template<class Function>
     decltype(auto) DoOnBackground(Function &&function)
     {
-        return m_backgroundPromiseFactory.MakePromise(std::forward<Function>(function));
+        return m_callFactory.MakeCallPromise(std::forward<Function>(function));
     }
 
     /// Выполняет переданную операцию в основном потоке.
-    void DoOnMainThread(const isprom::Operation &operation);
+    void DoOnMainThread(const isc::Operation &operation);
 
-    isprom::IDispatcher &GetMainThreadDispatcher();
+    isc::IDispatcher &GetMainThreadDispatcher();
 
-    isprom::IDispatcher &GetThreadPoolDispatcher();
+    isc::IDispatcher &GetThreadPoolDispatcher();
 
     /// Входит в основной цикл и исполняет его, пока не будет вызван QuitMainLoop.
     void EnterMainLoop();
@@ -34,10 +34,10 @@ public:
 
 private:
 #if defined(_WIN32)
-    isprom::Win32EventLoop m_eventLoop;
+    std::shared_ptr<isc::Win32EventLoop> m_eventLoop;
 #else
-    isprom::AsioEventLoop m_eventLoop;
+	std::shared_ptr<isc::AsioEventLoop> m_eventLoop;
 #endif
-    isprom::AsioThreadPool m_pool;
-    isprom::PromiseFactory m_backgroundPromiseFactory;
+	std::shared_ptr<isc::AsioThreadPool> m_pool;
+    isc::AsyncCallFactory m_callFactory;
 };

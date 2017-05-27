@@ -1,58 +1,47 @@
 #pragma once
-#include "IPromisePtr.h"
+#include "../platform/IDispatcher.h"
 #include "Promise.h"
-#include "promise_detail.h"
-#include <boost/optional.hpp>
-#include <type_traits>
 
-namespace isprom
+namespace isc
 {
+
 class PromiseFactory
 {
 public:
-    /// @param callDispatcher - диспетчер для запуска вызовов
-    /// @param callbackDispatcher - диспетчер для запуска колбеков
-    explicit PromiseFactory(IDispatcher &callDispatcher, IDispatcher &callbackDispatcher);
+	using IDispatcherPtr = isc::IDispatcherPtr;
 
-    /// @brief Создаёт promise для функции, выполняемой в фоновом потоке
-    /// Принимает функцию без аргументов, возвращающую результат операции
-    /// Возврат либо исключение функции используется для заполнения Promise.
-    /// Вызов callback'ов Promise выполняется в потоке callback'ов.
-    /// Возвращает Promise от операции, запущенной через диспетчер задач фабрики.
-    template<class Function>
-    decltype(auto) MakePromise(Function &&fn)
-    {
-        using ValueType = std::result_of_t<Function()>;
-        using ResultType = boost::variant<std::exception_ptr, ValueType>;
+	/// @param callbackDispatcher - callback operation dispatcher
+	explicit PromiseFactory(const IDispatcherPtr& callbackDispatcher)
+		: m_callbackDispatcher(callbackDispatcher)
+	{
+	}
 
-        auto promise = std::make_shared<Promise<ValueType>>(m_callbackDispatcher);
-        m_callDispatcher.Post([fn, promise] {
-            ResultType result;
-            try
-            {
-                auto value = fn();
-                static_assert(std::is_same<decltype(value), ValueType>::value, "unexpected internal types mismatch");
-                result = std::move(value);
-            }
-            catch (...)
-            {
-                result = std::current_exception();
-            }
-            if (result.which() == detail::WhichIndex<ResultType, ValueType>::value)
-            {
-                promise->Resolve(std::move_if_noexcept(boost::get<ValueType>(result)));
-            }
-            else
-            {
-                promise->Reject(std::move_if_noexcept(boost::get<std::exception_ptr>(result)));
-            }
-        });
+	template<class ValueType>
+	decltype(auto) MakeReadyPromise(ValueType value)
+	{
+		auto promiseObj = std::make_shared<PromiseObject<ValueType>>(m_callbackDispatcher);
+		promiseObj->Resolve(value);
 
-        return IPromisePtr<ValueType>(promise);
-    }
+		return Promise<ValueType>(promiseObj);
+	}
+
+	template<class ValueType>
+	decltype(auto) MakePromiseObject()
+	{
+		return std::make_shared<PromiseObject<ValueType>>(m_callbackDispatcher);
+	}
+
+	template<class ValueType>
+	decltype(auto) MakeRejectedPromise(const std::exception_ptr& ex)
+	{
+		auto promiseObj = std::make_shared<PromiseObject<ValueType>>(m_callbackDispatcher);
+		promiseObj->Reject(ex);
+
+		return Promise<ValueType>(promiseObj);
+	}
 
 private:
-    IDispatcher &m_callDispatcher;
-    IDispatcher &m_callbackDispatcher;
+	IDispatcherPtr m_callbackDispatcher;
 };
-}
+
+} // namespace isc

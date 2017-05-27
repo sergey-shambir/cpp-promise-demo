@@ -2,31 +2,37 @@
 #include "MainDispatcher.h"
 
 MainDispatcher::MainDispatcher()
-    : m_backgroundPromiseFactory(m_pool, m_eventLoop)
+	: m_pool(std::make_shared<isc::AsioThreadPool>())
+#if defined(_WIN32)
+	, m_eventLoop(std::make_shared<isc::Win32EventLoop>())
+#else
+	, m_eventLoop(std::make_shared<isc::AsioEventLoop>())
+#endif
+	, m_callFactory(m_pool, m_eventLoop)
 {
 }
 
-void MainDispatcher::DoOnMainThread(const isprom::Operation &operation)
+void MainDispatcher::DoOnMainThread(const isc::Operation& operation)
 {
-    m_eventLoop.Post(operation);
+	m_eventLoop->Dispatch(operation);
 }
 
-isprom::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
+isc::IDispatcher& MainDispatcher::GetMainThreadDispatcher()
 {
-    return m_eventLoop;
+	return *m_eventLoop;
 }
 
-isprom::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
+isc::IDispatcher& MainDispatcher::GetThreadPoolDispatcher()
 {
-    return m_pool;
+	return *m_pool;
 }
 
 void MainDispatcher::EnterMainLoop()
 {
-    m_eventLoop.Run();
+	m_eventLoop->Run();
 }
 
 void MainDispatcher::QuitMainLoop()
 {
-    m_eventLoop.DeferQuit();
+	m_eventLoop->DeferQuit();
 }

@@ -1,213 +1,231 @@
 #pragma once
-#include "../platform/IDispatcher.h"
-#include "IPromise.h"
-#include "promise_detail.h"
-#include <atomic>
-#include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
-#include <mutex>
+#include "PromiseObject.h"
+#include <memory>
+#include <type_traits>
 
-namespace isprom
+namespace isc
 {
 template<class ValueType>
 class Promise
-    : public IPromise<ValueType>
-    , public std::enable_shared_from_this<Promise<ValueType>>
-    , private boost::noncopyable
 {
 public:
-    using ThenFunction = typename IPromise<ValueType>::ThenFunction;
-    using CatchFunction = typename IPromise<ValueType>::CatchFunction;
+	using Value = ValueType;
+	using ValuePromiseObject = typename PromiseObject<Value>;
+	using ThenFunction = typename ValuePromiseObject::ThenFunction;
+	using CatchFunction = typename ValuePromiseObject::CatchFunction;
+	using CancelFunction = typename ValuePromiseObject::CancelFunction;
+	using DispatcherWeakPtr = typename ValuePromiseObject::DispatcherWeakPtr;
 
-    Promise(IDispatcher &dispatcher)
-        : m_dispatcher(dispatcher)
-        , m_canceled(false)
-    {
-    }
+	Promise() = default;
 
-    IDispatcher &GetDispatcher() override
-    {
-        return m_dispatcher;
-    }
+	explicit Promise(const std::shared_ptr<ValuePromiseObject>& promise)
+		: m_promise(promise)
+	{
+	}
 
-    void Then(const ThenFunction &onFulfilled) override
-    {
-        lock_guard lock(m_mutex);
-        if (m_then)
-        {
-            throw std::logic_error("Cannot call Then twice (implementation limitation)");
-        }
+	explicit operator bool() const
+	{
+		return bool(m_promise);
+	}
 
-        // Модный способ работы с boost.variant: switch/case по which,
-        //  which-индекс извлекается с помощью Boost MPL.
-        switch (m_storage.which())
-        {
-        case detail::VariantIndex<StorageType, PendingState>:
-            m_then = onFulfilled;
-            break;
-        case detail::VariantIndex<StorageType, ValueType>:
-            m_then = onFulfilled;
-            InvokeThen();
-            break;
-        default:
-            break;
-        }
-    }
+	const Promise& Then(const ThenFunction& onFulfilled) const
+	{
+		assert(m_promise);
+		m_promise->Then(onFulfilled);
+		return *this;
+	}
 
-    void Catch(const CatchFunction &onRejected) override
-    {
-        lock_guard lock(m_mutex);
-        if (m_catch)
-        {
-            throw std::logic_error("Cannot call Catch twice (implementation limitation)");
-        }
+	Promise& Then(const ThenFunction& onFulfilled)
+	{
+		assert(m_promise);
+		m_promise->Then(onFulfilled);
+		return *this;
+	}
 
-        // Модный способ работы с boost.variant: switch/case по which,
-        //  which-индекс извлекается с помощью Boost MPL.
-        switch (m_storage.which())
-        {
-        case detail::VariantIndex<StorageType, PendingState>:
-            m_catch = onRejected;
-            break;
-        case detail::VariantIndex<StorageType, std::exception_ptr>:
-            m_catch = onRejected;
-            InvokeCatch();
-            break;
-        default:
-            break;
-        }
-    }
+	const Promise& Catch(const CatchFunction& onRejected) const
+	{
+		assert(m_promise);
+		m_promise->Catch(onRejected);
+		return *this;
+	}
 
-    void Cancel() override
-    {
-        {
-            lock_guard lock(m_mutex);
-            if (m_storage.which() == detail::VariantIndex<StorageType, CanceledTag>)
-            {
-                return;
-            }
-            m_canceled = true;
-            m_storage = CanceledTag();
-        }
-        OnCancel();
-    }
+	Promise& Catch(const CatchFunction& onRejected)
+	{
+		assert(m_promise);
+		m_promise->Catch(onRejected);
+		return *this;
+	}
 
-    bool IsCanceled()
-    {
-        return m_canceled;
-    }
+	void Cancel()
+	{
+		assert(m_promise);
+		m_promise->Cancel();
+		m_promise.reset();
+	}
 
-    void Resolve(ValueType &&value)
-    {
-        CheckMovable<ValueType>();
-        lock_guard lock(m_mutex);
-        if (m_storage.which() != detail::VariantIndex<StorageType, PendingState>)
-        {
-            return;
-        }
-        m_storage = std::move(value);
-        if (m_then)
-        {
-            InvokeThen();
-        }
-    }
+	/// @param onFulfilled should return Promise<T>
+	template<class AsyncFunction>
+	decltype(auto) ThenDoAsync(AsyncFunction&& onFulfilled) const
+	{
+		assert(m_promise);
 
-    void Reject(std::exception_ptr &&exception)
-    {
-        CheckMovable<std::exception_ptr>();
-        lock_guard lock(m_mutex);
-        if (m_storage.which() != detail::VariantIndex<StorageType, PendingState>)
-        {
-            return;
-        }
-        m_storage = std::move(exception);
-        if (m_catch)
-        {
-            InvokeCatch();
-        }
-    }
+		using ResultPromise = std::result_of_t<AsyncFunction(Value)>;
+		using Result = typename ResultPromise::Value;
+		using ResultPromiseObject = PromiseObject<Result>;
 
-protected:
-    // Allows subclasses to have custom behavior on cancel.
-    virtual void OnCancel() {}
+		static_assert(std::is_same<ResultPromise, Promise<Result>>::value,
+			"async function for continuation must return Promise<T>");
+
+		auto promise = std::make_shared<ResultPromiseObject>(m_promise->GetDispatcher());
+		m_promise->Then([promise, onFulfilled](auto&& value) {
+			try
+			{
+				auto resultPromise = onFulfilled(std::move(value));
+				resultPromise.Then([promise](auto&& value) {
+					promise->Resolve(std::move(value));
+				});
+				resultPromise.Catch([promise](const std::exception_ptr& exception) {
+					promise->Reject(exception);
+				});
+			}
+			catch (...)
+			{
+				promise->Reject(std::current_exception());
+			}
+		});
+		m_promise->Catch([promise](const std::exception_ptr& exception) {
+			promise->Reject(exception);
+		});
+
+		std::weak_ptr<ValuePromiseObject> weakPromise = m_promise;
+		promise->DoOnCancel([weakPromise] {
+			if (auto nestedPromise = weakPromise.lock())
+			{
+				nestedPromise->Cancel();
+			}
+		});
+
+		return ResultPromise(promise);
+	}
+
+// Disable C4702 unreachable code: Resolve() is unreachable if onRejected always throws.
+#if defined(_MSC_VER)
+#pragma warning(push, 4)
+#pragma warning(disable : 4702)
+#endif
+
+	/// Creates continuation of async operation
+	///  with given dispatchers for call and callback,
+	///  passes first task result to onFulfilled, or exception to onRejected
+	template<class Function, class Function2>
+	decltype(auto) ThenDo(DispatcherWeakPtr callDispatcher, DispatcherWeakPtr callbackDispatcher, Function&& onFulfilled, Function2&& onRejected) const
+	{
+		assert(m_promise);
+		// TODO: <sergey.shambir> call cancel for nested promise when new promise canceled.
+
+		using ResultType = std::result_of_t<Function(Value)>;
+		using ResultType2 = std::result_of_t<Function2(const std::exception_ptr&)>;
+		using ResultPromise = PromiseObject<ResultType>;
+
+		static_assert(std::is_same_v<ResultType, ResultType2>, "Then and Catch continuation functions should return the same type");
+
+		// Execute continuation immediately for the same dispatcher.
+		auto firstDispatcher = m_promise->GetDispatcher().lock();
+		auto secondDispatcher = callDispatcher.lock();
+		const bool immediateMode = (bool(firstDispatcher) && (firstDispatcher.get() == secondDispatcher.get()));
+
+		// Dispatches new operation with nested continuation.
+		auto submit = [immediateMode, callDispatcher](auto&& operation) {
+			if (immediateMode)
+			{
+				operation();
+			}
+			else if (auto dispatcher = callDispatcher.lock())
+			{
+				dispatcher->Dispatch(operation);
+			}
+		};
+
+		auto promise = std::make_shared<ResultPromise>(callbackDispatcher);
+		m_promise->Then([promise, onFulfilled, submit](Value value) {
+			// TODO: <sergey.shambir> add movable-only values support.
+			//       possible solutions:
+			//        1) make_shared<Value>(move(value)).
+			submit([promise, onFulfilled, value] {
+				try
+				{
+					promise->Resolve(onFulfilled(Value(std::move_if_noexcept(value))));
+				}
+				catch (...)
+				{
+					promise->Reject(std::current_exception());
+				}
+			});
+		});
+		m_promise->Catch([submit, promise, onRejected](const std::exception_ptr& exception) {
+			submit([promise, onRejected, exception] {
+				try
+				{
+					promise->Resolve(onRejected(exception));
+				}
+				catch (...)
+				{
+					promise->Reject(std::current_exception());
+				}
+			});
+		});
+
+		std::weak_ptr<ValuePromiseObject> weakPromise = m_promise;
+		promise->DoOnCancel([weakPromise] {
+			if (auto promise = weakPromise.lock())
+			{
+				promise->Cancel();
+			}
+		});
+
+		return Promise<ResultType>(promise);
+	}
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+	/// Creates continuation of async operation
+	///  with given dispatchers for call and callback,
+	///  passes first task result to onFulfilled.
+	template<class Function>
+	decltype(auto) ThenDo(DispatcherWeakPtr callDispatcher, DispatcherWeakPtr callbackDispatcher, Function&& onFulfilled) const
+	{
+		assert(m_promise);
+		using ResultType = std::result_of_t<Function(Value)>;
+		auto rethrowFn = [](const std::exception_ptr& exception) -> ResultType {
+			std::rethrow_exception(exception);
+		};
+		return ThenDo(callDispatcher, callbackDispatcher, onFulfilled, rethrowFn);
+	}
+
+	/// Creates continuation of async operation
+	///  with promise dispatcher for call and callback,
+	///  passes first task result to onFulfilled.
+	template<class Function, class Function2>
+	decltype(auto) ThenDo(Function&& onFulfilled, Function2&& onRejected) const
+	{
+		assert(m_promise);
+		return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(onFulfilled), std::forward<Function2>(onRejected));
+	}
+
+	/// Creates continuation of async operation
+	///  with promise dispatcher for call and callback,
+	///  passes first task result to onFulfilled, or exception to onRejected
+	template<class Function>
+	decltype(auto) ThenDo(Function&& onFulfilled) const
+	{
+		assert(m_promise);
+		return ThenDo(m_promise->GetDispatcher(), m_promise->GetDispatcher(), std::forward<Function>(onFulfilled));
+	}
 
 private:
-    using lock_guard = std::lock_guard<std::mutex>;
-
-    struct CanceledTag
-    {
-    };
-    struct PendingState
-    {
-    };
-
-    using StorageType = boost::variant<
-        PendingState,
-        CanceledTag,
-        ValueType,
-        std::exception_ptr>;
-
-    template<class T>
-    inline void CheckMovable()
-    {
-        static_assert(std::is_nothrow_move_constructible<T>::value,
-            "type should be nonthrow move constructible");
-        static_assert(std::is_nothrow_move_assignable<T>::value,
-            "type should be nonthrow move assignable");
-    }
-
-    void InvokeThen()
-    {
-        try
-        {
-            if (m_callbackCalled)
-            {
-                return;
-            }
-            m_callbackCalled = true;
-
-            auto sharedThis = this->shared_from_this();
-            m_dispatcher.Post([sharedThis] {
-                auto &value = boost::get<ValueType>(sharedThis->m_storage);
-                sharedThis->m_then(std::move(value));
-            });
-        }
-        catch (...)
-        {
-            // It's too bad to forget promises.
-            std::terminate();
-        }
-    }
-
-    void InvokeCatch()
-    {
-        try
-        {
-            if (m_callbackCalled)
-            {
-                return;
-            }
-            m_callbackCalled = true;
-
-            auto sharedThis = this->shared_from_this();
-            m_dispatcher.Post([sharedThis] {
-                auto &exception = boost::get<std::exception_ptr>(sharedThis->m_storage);
-                sharedThis->m_catch(exception);
-            });
-        }
-        catch (...)
-        {
-            // It's too bad to forget promises.
-            std::terminate();
-        }
-    }
-
-    bool m_callbackCalled = false;
-    std::atomic_bool m_canceled;
-    IDispatcher &m_dispatcher;
-    std::mutex m_mutex;
-    StorageType m_storage;
-    ThenFunction m_then;
-    CatchFunction m_catch;
+	std::shared_ptr<ValuePromiseObject> m_promise;
 };
-}
+
+} // namespace isc

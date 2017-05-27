@@ -1,27 +1,28 @@
 #pragma once
 #include "IEventLoop.h"
-#include <boost/noncopyable.hpp>
 
 #if defined(_WIN32)
 
-namespace isprom
+namespace isc
 {
 class Win32EventLoop
-    : public IEventLoop
-    , boost::noncopyable
+	: public IEventLoop
 {
 public:
-    Win32EventLoop();
-    ~Win32EventLoop();
+	Win32EventLoop();
+	~Win32EventLoop();
 
-    void Post(const Operation &operation) override;
-    void Run() override;
-    void DeferQuit() override;
+	Win32EventLoop(const Win32EventLoop&) = delete;
+	Win32EventLoop& operator=(const Win32EventLoop&) = delete;
+
+	void Dispatch(const Operation& operation) override;
+	void Run() override;
+	void DeferQuit() override;
 
 private:
-    struct Impl;
+	struct Impl;
 
-    std::unique_ptr<Impl> m_impl;
+	std::unique_ptr<Impl> m_impl;
 };
 }
 

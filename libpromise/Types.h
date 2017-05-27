@@ -1,9 +1,7 @@
 #pragma once
 #include <functional>
 
-namespace isprom
+namespace isc
 {
 using Operation = std::function<void()>;
-using CancelPredicate = std::function<bool()>;
-using CancelableOperation = std::function<void(CancelPredicate const &didCancel)>;
 }

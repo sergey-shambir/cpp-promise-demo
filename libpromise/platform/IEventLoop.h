@@ -2,14 +2,14 @@
 #include "IDispatcher.h"
 #include <chrono>
 
-namespace isprom
+namespace isc
 {
 class IEventLoop : public IDispatcher
 {
 public:
-    virtual ~IEventLoop() = default;
+	virtual ~IEventLoop() = default;
 
-    virtual void Run() = 0;
-    virtual void DeferQuit() = 0;
+	virtual void Run() = 0;
+	virtual void DeferQuit() = 0;
 };
 }

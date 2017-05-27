@@ -83,7 +83,7 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
                 return 25;
             });
-            auto stringPromise = numPromise.ThenDo(m_dispatcher.GetMainThreadDispatcher(), [this](int value) {
+            auto stringPromise = numPromise.ThenDo([this](int value) {
                 PrintSync("converting int to string #2: " + std::to_string(value));
                 return std::to_string(value);
             });
@@ -102,7 +102,7 @@ public:
                 throw std::runtime_error("throw promise throws exception");
                 return 14;
             });
-            auto stringPromise = throwPromise.ThenDo(m_dispatcher.GetMainThreadDispatcher(), [this](int value) {
+            auto stringPromise = throwPromise.ThenDo([this](int value) {
                 PrintSync("ERROR - should never convert int to string #3: " + std::to_string(value));
                 return std::to_string(value); }, [this](const std::exception_ptr &exception) {
                 try
