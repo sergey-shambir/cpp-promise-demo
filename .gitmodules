@@ -1,0 +1,3 @@
+[submodule "curlcpp"]
+	path = curlcpp
+	url = https://github.com/sergey-shambir/curlcpp.git
