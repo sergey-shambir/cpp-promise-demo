@@ -6,17 +6,17 @@ MainDispatcher::MainDispatcher()
 {
 }
 
-void MainDispatcher::DoOnMainThread(const isprom::Operation &operation)
+void MainDispatcher::DoOnMainThread(const isc::Operation &operation)
 {
-    m_eventLoop.Post(operation);
+    m_eventLoop.Dispatch(operation);
 }
 
-isprom::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
+isc::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
 {
     return m_eventLoop;
 }
 
-isprom::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
+isc::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
 {
     return m_pool;
 }

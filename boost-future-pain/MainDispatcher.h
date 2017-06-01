@@ -21,11 +21,11 @@ public:
     }
 
     /// Выполняет переданную операцию в основном потоке.
-    void DoOnMainThread(const isprom::Operation &operation);
+    void DoOnMainThread(const isc::Operation &operation);
 
-    isprom::IDispatcher &GetMainThreadDispatcher();
+    isc::IDispatcher &GetMainThreadDispatcher();
 
-    isprom::IDispatcher &GetThreadPoolDispatcher();
+    isc::IDispatcher &GetThreadPoolDispatcher();
 
     /// Входит в основной цикл и исполняет его, пока не будет вызван QuitMainLoop.
     void EnterMainLoop();
@@ -34,7 +34,7 @@ public:
     void QuitMainLoop();
 
 private:
-    isprom::AsioEventLoop m_eventLoop;
-    isprom::AsioThreadPool m_pool;
+    isc::AsioEventLoop m_eventLoop;
+    isc::AsioThreadPool m_pool;
     boost::shared_ptr<FutureFactory> m_backgroundFutureFactory;
 };

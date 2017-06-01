@@ -10,7 +10,7 @@ class FutureFactory
     , public boost::executor
 {
 public:
-    FutureFactory(isprom::IDispatcher &callDispatcher, isprom::IDispatcher &callbackDispatcher);
+    FutureFactory(isc::IDispatcher &callDispatcher, isc::IDispatcher &callbackDispatcher);
 
     template<class Function>
     decltype(auto) MakePromise(Function &&function)
@@ -21,7 +21,7 @@ public:
 
         auto pPromise = std::make_shared<PromiseType>();
         pPromise->set_executor(boost::executor_ptr_type(shared_from_this()));
-        m_callDispatcher.Post([pPromise, function] {
+        m_callDispatcher.Dispatch([pPromise, function] {
             try
             {
                 ResultType type = function();
@@ -43,6 +43,6 @@ private:
     bool try_executing_one();
 
     std::atomic_bool m_closed;
-    isprom::IDispatcher &m_callDispatcher;
-    isprom::IDispatcher &m_callbackDispatcher;
+    isc::IDispatcher &m_callDispatcher;
+    isc::IDispatcher &m_callbackDispatcher;
 };

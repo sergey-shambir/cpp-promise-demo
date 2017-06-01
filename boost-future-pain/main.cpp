@@ -22,7 +22,7 @@ public:
     {
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
-        m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
+        m_dispatcher.GetThreadPoolDispatcher().Dispatch([this, promise] {
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
@@ -41,7 +41,7 @@ public:
     {
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
-        m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
+        m_dispatcher.GetThreadPoolDispatcher().Dispatch([this, promise] {
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
@@ -60,7 +60,7 @@ public:
     {
         // .. создаём boost::promise и получаем от него future
         auto promise = std::make_shared<boost::promise<int>>();
-        m_dispatcher.GetThreadPoolDispatcher().Post([this, promise] {
+        m_dispatcher.GetThreadPoolDispatcher().Dispatch([this, promise] {
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
             PrintSync("finished async task");
             return 14;
