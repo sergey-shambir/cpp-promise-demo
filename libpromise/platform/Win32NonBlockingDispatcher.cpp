@@ -10,8 +10,10 @@
 // WTL includes
 #define NOMINMAX
 #include <Windows.h>
-#include <atlapp.h>
+
 #include <atlbase.h>
+
+#include <atlapp.h>
 
 namespace isc
 {
