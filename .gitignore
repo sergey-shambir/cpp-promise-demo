@@ -40,3 +40,4 @@ cef
 # QtCreator intermediate files
 *.txt.user
 
+/CMakeSettings.json
