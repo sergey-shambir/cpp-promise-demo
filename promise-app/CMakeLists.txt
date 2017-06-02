@@ -13,7 +13,7 @@ custom_enable_cxx17(promise_app)
 target_include_directories(promise_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../libpromise)
 
 # Добавляем библиотеки
-target_link_libraries(promise_app libpromise libhttp)
+target_link_libraries(promise_app libpromise)
 if(UNIX)
-target_link_libraries(promise_app lboost_system pthread)
+target_link_libraries(promise_app boost_system libpromise pthread)
 endif(UNIX)

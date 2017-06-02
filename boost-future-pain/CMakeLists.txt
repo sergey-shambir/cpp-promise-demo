@@ -15,5 +15,5 @@ target_include_directories(boost_future_pain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/
 # Добавляем библиотеки
 target_link_libraries(boost_future_pain libpromise)
 if(UNIX)
-target_link_libraries(boost_future_pain boost_system pthread)
+target_link_libraries(boost_future_pain boost_system libpromise pthread)
 endif(UNIX)
