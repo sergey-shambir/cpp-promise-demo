@@ -10,7 +10,7 @@ class Promise
 {
 public:
 	using Value = ValueType;
-	using ValuePromiseObject = typename PromiseObject<Value>;
+	using ValuePromiseObject = PromiseObject<Value>;
 	using ThenFunction = typename ValuePromiseObject::ThenFunction;
 	using CatchFunction = typename ValuePromiseObject::CatchFunction;
 	using CancelFunction = typename ValuePromiseObject::CancelFunction;

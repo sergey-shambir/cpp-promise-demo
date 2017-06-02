@@ -5,15 +5,16 @@
 #include <stdexcept>
 #include <variant>
 #include <cassert>
+#include <thread>
 
 namespace isc
 {
-template<class ValueType>
+template<typename ValueType>
 class PromiseObject
 	: public std::enable_shared_from_this<PromiseObject<ValueType>>
 {
 public:
-	using Value = typename ValueType;
+	using Value = ValueType;
 	using ThenFunction = std::function<void(Value)>;
 	using CatchFunction = std::function<void(std::exception_ptr const&)>;
 	using CancelFunction = std::function<void()>;
