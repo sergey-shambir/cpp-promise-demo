@@ -11,4 +11,4 @@ add_library(libhttp ${SRC_LIBHTTP})
 custom_enable_cxx17(libhttp)
 
 # Добавляем пути поиска заголовочных файлов.
-target_include_directories(libhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../libpromise ${VCPKG_INCLUDE_DIRS})
+target_include_directories(libhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../libpromise ${CMAKE_CURRENT_SOURCE_DIR}/../curlcpp/include ${VCPKG_INCLUDE_DIRS})

@@ -1,7 +1,13 @@
 #pragma once
+#include <curl_easy.h>
 
 namespace http
 {
+using curl_easy_ptr = std::unique_ptr<curl::curl_easy>;
+
+class HttpResponse;
+class HttpRequest;
+
 class CurlUtils
 {
 public:
@@ -12,5 +18,7 @@ public:
 
 	// convert wstring to UTF-8 string
 	static std::string wstring_to_utf8(std::wstring_view str);
+
+	static curl_easy_ptr MakeCurlEasy(const HttpRequest& request, HttpResponse& response);
 };
 }

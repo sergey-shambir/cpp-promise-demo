@@ -9,6 +9,7 @@ project(cpp-promise-demo)
 include(cmake/use-msvc-static-runtime.cmake)
 
 # --- Свойства для сборки демонстрационных приложений ---
+add_subdirectory(curlcpp)
 add_subdirectory(libpromise)
 add_subdirectory(libhttp)
 add_subdirectory(promise-app)
