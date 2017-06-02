@@ -4,6 +4,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <variant>
+#include <cassert>
 
 namespace isc
 {
