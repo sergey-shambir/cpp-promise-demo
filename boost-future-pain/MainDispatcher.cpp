@@ -2,31 +2,31 @@
 #include "MainDispatcher.h"
 
 MainDispatcher::MainDispatcher()
-    : m_backgroundFutureFactory(boost::make_shared<FutureFactory>(m_pool, m_eventLoop))
+	: m_backgroundFutureFactory(boost::make_shared<FutureFactory>(m_pool, m_eventLoop))
 {
 }
 
-void MainDispatcher::DoOnMainThread(const isc::Operation &operation)
+void MainDispatcher::DoOnMainThread(const isc::Operation& operation)
 {
-    m_eventLoop.Dispatch(operation);
+	m_eventLoop.Dispatch(operation);
 }
 
-isc::IDispatcher &MainDispatcher::GetMainThreadDispatcher()
+isc::IDispatcher& MainDispatcher::GetMainThreadDispatcher()
 {
-    return m_eventLoop;
+	return m_eventLoop;
 }
 
-isc::IDispatcher &MainDispatcher::GetThreadPoolDispatcher()
+isc::IDispatcher& MainDispatcher::GetThreadPoolDispatcher()
 {
-    return m_pool;
+	return m_pool;
 }
 
 void MainDispatcher::EnterMainLoop()
 {
-    m_eventLoop.Run();
+	m_eventLoop.Run();
 }
 
 void MainDispatcher::QuitMainLoop()
 {
-    m_eventLoop.DeferQuit();
+	m_eventLoop.DeferQuit();
 }

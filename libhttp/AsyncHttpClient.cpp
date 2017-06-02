@@ -245,5 +245,4 @@ void AsyncHttpClient::WaitWhileNoRequests()
 	unique_lock lock(m_mutex);
 	m_postedRequest.wait(lock);
 }
-
 }

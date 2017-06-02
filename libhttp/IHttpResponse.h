@@ -17,7 +17,7 @@ public:
 	virtual std::string_view GetData() const = 0;
 
 	// Returns value for given header.
-	virtual std::wstring GetHeaderValue(const std::wstring &key) const = 0;
+	virtual std::wstring GetHeaderValue(const std::wstring& key) const = 0;
 };
 
 } // namespace http

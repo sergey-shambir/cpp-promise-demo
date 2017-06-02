@@ -1,11 +1,11 @@
 #pragma once
 #include "../platform/IDispatcher.h"
+#include <cassert>
 #include <functional>
 #include <mutex>
 #include <stdexcept>
-#include <variant>
-#include <cassert>
 #include <thread>
+#include <variant>
 
 namespace isc
 {
@@ -152,8 +152,7 @@ private:
 	{
 	};
 
-	using StorageType = std::variant<
-		PendingState,
+	using StorageType = std::variant<PendingState,
 		CanceledState,
 		Value,
 		std::exception_ptr>;
